@@ -140,6 +140,7 @@ class EcoleDirecteAPI {
                 : `${this.baseURL}/login.awp?v=${this.apiVersion}`;
             
             console.log('📤 Requête:', { url, useProxy: this.useProxy, hasGtk: !!this.gtkCookie });
+            
             const headers = {
                 'Content-Type': 'application/x-www-form-urlencoded',
                 'User-Agent': this.userAgent
@@ -151,7 +152,6 @@ class EcoleDirecteAPI {
                 console.log('🔑 Header X-Gtk ajouté:', this.gtkCookie.substring(0, 50) + '...');
             } else {
                 console.warn('⚠️ Pas de cookie GTK disponible pour le login !');
-            }   console.log('🔑 Header X-Gtk ajouté');
             }
             
             const response = await fetch(url, {
