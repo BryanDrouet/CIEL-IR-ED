@@ -43,13 +43,9 @@ class EcoleDirecteAPI {
         try {
             console.log('🔐 Tentative de connexion...', { username, passwordLength: password.length });
             
-            // Nettoyer l'identifiant (enlever underscore si présent)
-            const cleanUsername = username.replace(/_/g, '').toLowerCase();
-            console.log('🧹 Identifiant nettoyé:', cleanUsername);
-            
             // Préparer les données au format form-urlencoded
             const payload = {
-                identifiant: cleanUsername,
+                identifiant: username,
                 motdepasse: password
             };
             
