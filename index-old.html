@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoleDirecte Dashboard - Moyennes & Notifications</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles-extended.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Redirection depuis GitHub Pages vers Vercel
+        if (window.location.hostname.includes('github.io')) {
+            window.location.href = 'https://ciel-ir-ed.vercel.app';
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <!-- Section de connexion -->
+        <div id="loginSection" class="section">
+            <div class="login-card">
+                <h1>🎓 EcoleDirecte Dashboard</h1>
+                <p class="subtitle">Connexion sécurisée</p>
+                
+                <form id="login-form" autocomplete="on">
+                    <div class="form-group">
+                        <label for="username">Identifiant EcoleDirecte</label>
+                        <input type="text" id="username" name="username" required autocomplete="username webauthn">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">Mot de passe EcoleDirecte</label>
+                        <div class="password-input-wrapper">
+                            <input type="password" id="password" name="password" required autocomplete="current-password webauthn">
+                            <button type="button" id="togglePassword" class="toggle-password-btn" title="Afficher le mot de passe">
+                                👁️
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="remember-me-container">
+                        <label class="remember-me-label">
+                            <input type="checkbox" id="remember-me" name="rememberMe">
+                            <span class="checkmark"></span>
+                            <span class="label-text">Se souvenir de moi</span>
+                        </label>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Se connecter sur EcoleDirecte</button>
+                </form>
+                
+                <div id="loginError" class="error-message"></div>
+            </div>
+        </div>
+
+        <!-- Section du tableau de bord -->
+        <div id="dashboardSection" class="section hidden">
+            <header class="dashboard-header">
+                <div class="header-content">
+                    <h1>📊 EcoleDirecte Dashboard</h1>
+                    <div class="user-info">
+                        <span id="userName"></span>
+                        <button id="logoutBtn" class="btn btn-secondary">Déconnexion</button>
+                        <button id="refreshBtn" class="btn btn-icon" title="Rafraîchir">🔄</button>
+                    </div>
+                </div>
+                
+                <!-- Navigation par onglets -->
+                <nav class="tabs-navigation">
+                    <button class="tab-btn active" data-tab="overview">
+                        <span class="tab-icon">📊</span>
+                        <span class="tab-label">Vue d'ensemble</span>
+                    </button>
+                    <button class="tab-btn" data-tab="schedule">
+                        <span class="tab-icon">📅</span>
+                        <span class="tab-label">Emploi du temps</span>
+                    </button>
+                    <button class="tab-btn" data-tab="messages">
+                        <span class="tab-icon">✉️</span>
+                        <span class="tab-label">Messagerie</span>
+                        <span class="badge" id="unreadBadge"></span>
+                    </button>
+                    <button class="tab-btn" data-tab="homework">
+                        <span class="tab-icon">📚</span>
+                        <span class="tab-label">Cahier de texte</span>
+                    </button>
+                    <button class="tab-btn" data-tab="schoollife">
+                        <span class="tab-icon">🏫</span>
+                        <span class="tab-label">Vie scolaire</span>
+                    </button>
+                    <button class="tab-btn" data-tab="classlife">
+                        <span class="tab-icon">👥</span>
+                        <span class="tab-label">Vie de classe</span>
+                    </button>
+                </nav>
+            </header>
+
+            <!-- Notifications -->
+            <div id="notificationBanner" class="notification-banner hidden">
+                <span id="notificationText"></span>
+                <button id="closeNotification">✕</button>
+            </div>
+
+            <!-- ONGLET VUE D'ENSEMBLE -->
+            <div class="tab-content active" id="overviewTab">
+                <!-- Statistiques principales -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Moyenne Générale</h3>
+                        <div class="stat-value" id="averageGeneral">--</div>
+                        <div class="stat-trend" id="averageTrend"></div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <h3>Nombre de notes</h3>
+                        <div class="stat-value" id="gradeCount">--</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <h3>Meilleure matière</h3>
+                        <div class="stat-value" id="bestSubject">--</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <h3>Dernière MAJ</h3>
+                        <div class="stat-value" id="lastUpdate">--</div>
+                    </div>
+                </div>
+
+                <!-- Graphiques -->
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <h3>📈 Évolution de la moyenne générale</h3>
+                        <canvas id="evolutionChart"></canvas>
+                    </div>
+                    
+                    <div class="chart-card">
+                        <h3>📊 Moyennes par matière</h3>
+                        <canvas id="subjectsChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Détails des notes -->
+                <div class="grades-section">
+                    <h2>📝 Détail des notes par matière</h2>
+                    <div id="gradesContainer"></div>
+                </div>
+
+                <!-- Notifications de menu -->
+                <div class="menu-section">
+                    <h2>🍽️ Notifications des menus</h2>
+                    <div id="menuNotifications">
+                        <p class="info-message">Les notifications de nouveaux menus apparaîtront ici.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ONGLET EMPLOI DU TEMPS -->
+            <div class="tab-content" id="scheduleTab">
+                <div class="content-header">
+                    <h2>📅 Emploi du temps</h2>
+                    <div class="schedule-controls">
+                        <button class="btn btn-icon" id="prevWeek">◀</button>
+                        <span id="currentWeek">Semaine actuelle</span>
+                        <button class="btn btn-icon" id="nextWeek">▶</button>
+                        <button class="btn btn-primary" id="todayBtn">Aujourd'hui</button>
+                    </div>
+                </div>
+                <div class="schedule-view">
+                    <div id="scheduleContainer" class="schedule-grid"></div>
+                </div>
+            </div>
+
+            <!-- ONGLET MESSAGERIE -->
+            <div class="tab-content" id="messagesTab">
+                <div class="content-header">
+                    <h2>✉️ Messagerie</h2>
+                    <div class="message-controls">
+                        <button class="btn btn-primary" id="composeBtn">✍️ Nouveau message</button>
+                        <div class="message-filters">
+                            <button class="filter-btn active" data-filter="all">Tous</button>
+                            <button class="filter-btn" data-filter="unread">Non lus</button>
+                            <button class="filter-btn" data-filter="sent">Envoyés</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="messages-view">
+                    <div class="messages-list" id="messagesList">
+                        <p class="info-message">Chargement des messages...</p>
+                    </div>
+                    <div class="message-detail hidden" id="messageDetail">
+                        <button class="btn btn-secondary back-btn" id="backToList">← Retour</button>
+                        <div id="messageContent"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ONGLET CAHIER DE TEXTE -->
+            <div class="tab-content" id="homeworkTab">
+                <div class="content-header">
+                    <h2>📚 Cahier de texte</h2>
+                    <div class="homework-controls">
+                        <select id="homeworkFilter" class="filter-select">
+                            <option value="all">Tous les devoirs</option>
+                            <option value="todo">À faire</option>
+                            <option value="done">Terminés</option>
+                            <option value="late">En retard</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="homework-view">
+                    <div id="homeworkContainer"></div>
+                </div>
+            </div>
+
+            <!-- ONGLET VIE SCOLAIRE -->
+            <div class="tab-content" id="schoollifeTab">
+                <div class="content-header">
+                    <h2>🏫 Vie scolaire</h2>
+                </div>
+                <div class="schoollife-grid">
+                    <div class="schoollife-card">
+                        <h3>📊 Absences</h3>
+                        <div id="absencesContainer">
+                            <p class="info-message">Chargement...</p>
+                        </div>
+                    </div>
+                    <div class="schoollife-card">
+                        <h3>⏰ Retards</h3>
+                        <div id="delaysContainer">
+                            <p class="info-message">Chargement...</p>
+                        </div>
+                    </div>
+                    <div class="schoollife-card">
+                        <h3>⚠️ Sanctions</h3>
+                        <div id="sanctionsContainer">
+                            <p class="info-message">Chargement...</p>
+                        </div>
+                    </div>
+                    <div class="schoollife-card">
+                        <h3>🌟 Encouragements</h3>
+                        <div id="encouragementsContainer">
+                            <p class="info-message">Chargement...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ONGLET VIE DE CLASSE -->
+            <div class="tab-content" id="classlifeTab">
+                <div class="content-header">
+                    <h2>👥 Vie de classe</h2>
+                </div>
+                <div class="classlife-view">
+                    <div class="classlife-card">
+                        <h3>📢 Annonces de la classe</h3>
+                        <div id="classAnnouncementsContainer">
+                            <p class="info-message">Aucune annonce pour le moment</p>
+                        </div>
+                    </div>
+                    <div class="classlife-card">
+                        <h3>📅 Événements à venir</h3>
+                        <div id="classEventsContainer">
+                            <p class="info-message">Aucun événement prévu</p>
+                        </div>
+                    </div>
+                    <div class="classlife-card">
+                        <h3>📋 Documents de classe</h3>
+                        <div id="classDocumentsContainer">
+                            <p class="info-message">Aucun document disponible</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loader -->
+        <div id="loader" class="loader hidden">
+            <div class="spinner"></div>
+            <p>Chargement des données...</p>
+        </div>
+    </div>
+
+    <!-- Scripts simplifiés -->
+    <script src="simple-ecole.js"></script>
+    <script src="app-simple.js"></script>
+    
+    <!-- Anciens scripts (désactivés pour le moment)
+    <script src="ecoleDirecte.js"></script>
+    <script src="calculator.js"></script>
+    <script src="charts.js"></script>
+    <script src="notifications.js"></script>
+    <script src="schedule.js"></script>
+    <script src="messaging.js"></script>
+    <script src="homework.js"></script>
+    <script src="schoollife.js"></script>
+    <script src="navigation.js"></script>
+    <script src="app.js"></script>
+    -->
+</body>
+</html>
