@@ -29,20 +29,19 @@ export default async function handler(req, res) {
         // Construire l'URL de l'API EcoleDirecte (le path contient déjà les query params)
         const apiUrl = `https://api.ecoledirecte.com/v3/${path}`;
 
+        console.log('🌐 Proxying request to:', apiUrl);
+        console.log('📋 Method:', req.method);
+
         // Préparer les headers
         const headers = {
             'Content-Type': 'application/x-www-form-urlencoded',
             'User-Agent': req.headers['user-agent'] || 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36'
         };
 
-        // Ajouter le token si présent
-        if (req.headers['x-token']) {
-            headers['X-Token'] = req.headers['x-token'];
-        }
-
         // Ajouter le cookie GTK si présent
         if (req.headers['x-gtk']) {
             headers['X-Gtk'] = req.headers['x-gtk'];
+            console.log('🍪 GTK header ajouté');
         }
 
         // Préparer le body

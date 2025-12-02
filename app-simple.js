@@ -40,15 +40,17 @@ document.addEventListener('DOMContentLoaded', () => {
             showMessage('🌐 Ouverture d\'EcoleDirecte...', 'info');
 
             // Attendre un peu pour que l'utilisateur voie le message
-            setTimeout(() => {
+            setTimeout(async () => {
                 // Ouvrir EcoleDirecte
-                const result = simpleED.loginAndRedirect(username, password);
+                const result = await simpleED.loginAndRedirect(username, password);
                 
                 if (result.success) {
-                    showMessage('✅ EcoleDirecte ouvert - Connectez-vous avec vos identifiants', 'success');
-                    
-                    // Afficher les instructions
-                    showInstructions(username, password);
+                    if (result.showInstructions) {
+                        showMessage('⚠️ Connexion automatique impossible - Mode manuel', 'warning');
+                        showInstructions(username, password);
+                    } else {
+                        showMessage('✅ Redirection vers votre panel...', 'success');
+                    }
                 } else {
                     showMessage(result.message, 'error');
                 }
