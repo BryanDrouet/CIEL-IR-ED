@@ -5,9 +5,15 @@
 
 class EcoleDirecteAPI {
     constructor() {
-        // Utilisation directe de l'API EcoleDirecte
-        this.baseURL = 'https://api.ecoledirecte.com/v3';
-        console.log(`📡 API Endpoint: ${this.baseURL}`);
+        // Utiliser le proxy Vercel en production, API directe en local
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            this.baseURL = 'https://api.ecoledirecte.com/v3';
+            this.useProxy = false;
+        } else {
+            this.baseURL = '/api/proxy';
+            this.useProxy = true;
+        }
+        console.log(`📡 API Endpoint: ${this.baseURL} (Proxy: ${this.useProxy})`);
         
         this.token = null;
         this.accountData = null;
@@ -30,7 +36,11 @@ class EcoleDirecteAPI {
             const formData = new URLSearchParams();
             formData.append('data', JSON.stringify(payload));
             
-            const response = await fetch(`${this.baseURL}/login.awp`, {
+            const url = this.useProxy 
+                ? `${this.baseURL}?path=login.awp`
+                : `${this.baseURL}/login.awp`;
+            
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -83,7 +93,11 @@ class EcoleDirecteAPI {
         try {
             const periodeActuelle = 'A001'; // Période actuelle, à adapter selon les besoins
 
-            const response = await fetch(`${this.baseURL}/eleves/${this.accountInfo.id}/notes.awp?verbe=get&`, {
+            const url = this.useProxy 
+                ? `${this.baseURL}?path=eleves/${this.accountInfo.id}/notes.awp?verbe=get&`
+                : `${this.baseURL}/eleves/${this.accountInfo.id}/notes.awp?verbe=get&`;
+
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -174,7 +188,11 @@ class EcoleDirecteAPI {
 
         try {
             // Note: L'API réelle nécessiterait les bons paramètres
-            const response = await fetch(`${this.baseURL}/E/${this.accountInfo.id}/emploidutemps.awp?verbe=get&`, {
+            const url = this.useProxy 
+                ? `${this.baseURL}?path=E/${this.accountInfo.id}/emploidutemps.awp?verbe=get&`
+                : `${this.baseURL}/E/${this.accountInfo.id}/emploidutemps.awp?verbe=get&`;
+
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -211,7 +229,11 @@ class EcoleDirecteAPI {
         }
 
         try {
-            const response = await fetch(`${this.baseURL}/E/${this.accountInfo.id}/messages.awp?verbe=get&orderBy=date&order=desc&page=0&itemsPerPage=20`, {
+            const url = this.useProxy 
+                ? `${this.baseURL}?path=E/${this.accountInfo.id}/messages.awp?verbe=get&orderBy=date&order=desc&page=0&itemsPerPage=20`
+                : `${this.baseURL}/E/${this.accountInfo.id}/messages.awp?verbe=get&orderBy=date&order=desc&page=0&itemsPerPage=20`;
+
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -244,7 +266,11 @@ class EcoleDirecteAPI {
         }
 
         try {
-            const response = await fetch(`${this.baseURL}/Eleves/${this.accountInfo.id}/cahierdetexte.awp?verbe=get&`, {
+            const url = this.useProxy 
+                ? `${this.baseURL}?path=Eleves/${this.accountInfo.id}/cahierdetexte.awp?verbe=get&`
+                : `${this.baseURL}/Eleves/${this.accountInfo.id}/cahierdetexte.awp?verbe=get&`;
+
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -277,7 +303,15 @@ class EcoleDirecteAPI {
         }
 
         try {
-            const response = await fetch(`${this.baseURL}/E/${this.accountInfo.id}/viescolaire.awp?verbe=get&`, {
+            const url = this.useProxy 
+                ? `${this.baseURL}?path=E/${this.accountInfo.id}/viescolaire.awp?verbe=get&`
+                : `${this.baseURL}/E/${this.accountInfo.id}/viescolaire.awp?verbe=get&`;
+
+            const response = await fetch(url, {
+                ? `${this.baseURL}?path=E/${this.accountInfo.id}/viescolaire.awp?verbe=get&`
+                : `${this.baseURL}/E/${this.accountInfo.id}/viescolaire.awp?verbe=get&`;
+
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -346,7 +380,11 @@ class EcoleDirecteAPI {
             const dateDebut = this.formatDate(today);
             const dateFin = this.formatDate(new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000)); // 30 jours
 
-            const response = await fetch(`${this.baseURL}/E/${this.accountInfo.id}/cantines.awp?verbe=get&`, {
+            const url = this.useProxy 
+                ? `${this.baseURL}?path=E/${this.accountInfo.id}/cantines.awp?verbe=get&`
+                : `${this.baseURL}/E/${this.accountInfo.id}/cantines.awp?verbe=get&`;
+
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
