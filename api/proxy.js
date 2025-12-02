@@ -4,10 +4,12 @@
  */
 
 export default async function handler(req, res) {
-    // Autoriser les CORS
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    // Autoriser les CORS avec support des cookies
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, X-Token');
+    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, X-Token, X-Gtk, User-Agent');
+    res.setHeader('Access-Control-Expose-Headers', 'Set-Cookie');
 
     // Gérer les requêtes OPTIONS (preflight)
     if (req.method === 'OPTIONS') {
@@ -17,24 +19,30 @@ export default async function handler(req, res) {
 
     try {
         // Extraire le chemin de l'API depuis l'URL
-        const { path } = req.query;
+        const { path, getGtkCookie } = req.query;
         
         if (!path) {
             res.status(400).json({ error: 'Path parameter is required' });
             return;
         }
 
-        // Construire l'URL de l'API EcoleDirecte
+        // Construire l'URL de l'API EcoleDirecte (le path contient déjà les query params)
         const apiUrl = `https://api.ecoledirecte.com/v3/${path}`;
 
         // Préparer les headers
         const headers = {
             'Content-Type': 'application/x-www-form-urlencoded',
+            'User-Agent': req.headers['user-agent'] || 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36'
         };
 
         // Ajouter le token si présent
         if (req.headers['x-token']) {
             headers['X-Token'] = req.headers['x-token'];
+        }
+
+        // Ajouter le cookie GTK si présent
+        if (req.headers['x-gtk']) {
+            headers['X-Gtk'] = req.headers['x-gtk'];
         }
 
         // Préparer le body
@@ -59,6 +67,41 @@ export default async function handler(req, res) {
             body: body,
         });
 
+        // Transférer les cookies de la réponse
+        const setCookieHeaders = response.headers.raw()['set-cookie'];
+        if (setCookieHeaders) {
+            res.setHeader('Set-Cookie', setCookieHeaders);
+        }
+
+        // Pour les requêtes GET spéciales (récupération GTK), extraire et retourner le cookie
+        if (req.method === 'GET' && getGtkCookie === 'true') {
+            console.log('Proxy GET GTK response:', { status: response.status, hasCookies: !!setCookieHeaders });
+            
+            let gtkCookie = null;
+            if (setCookieHeaders) {
+                const cookieString = setCookieHeaders.join(';');
+                const gtkMatch = cookieString.match(/GTK=([^;]+)/);
+                if (gtkMatch) {
+                    gtkCookie = gtkMatch[1];
+                }
+            }
+            
+            res.status(200).json({ 
+                success: !!gtkCookie, 
+                gtkCookie: gtkCookie,
+                status: response.status 
+            });
+            return;
+        }
+
+        // Pour les autres requêtes GET, retourner le statut et les headers
+        if (req.method === 'GET') {
+            console.log('Proxy GET response:', { status: response.status, hasCookies: !!setCookieHeaders });
+            res.status(response.status).end();
+            return;
+        }
+
+        // Pour les requêtes POST, retourner le JSON
         const data = await response.json();
 
         console.log('Proxy response:', { status: response.status, code: data.code });

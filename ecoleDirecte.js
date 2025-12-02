@@ -45,29 +45,51 @@ class EcoleDirecteAPI {
         try {
             console.log('🔑 Récupération du cookie GTK...');
             
-            const url = this.useProxy 
-                ? `${this.baseURL}?path=login.awp?gtk=1&v=${this.apiVersion}`
-                : `${this.baseURL}/login.awp?gtk=1&v=${this.apiVersion}`;
-            
-            const response = await fetch(url, {
-                method: 'GET',
-                headers: {
-                    'User-Agent': this.userAgent
-                },
-                credentials: 'include'
-            });
+            // Si on utilise le proxy, il faut faire une requête spéciale pour récupérer le GTK
+            if (this.useProxy) {
+                const url = `${this.baseURL}?path=login.awp?gtk=1&v=${this.apiVersion}&getGtkCookie=true`;
+                
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'User-Agent': this.userAgent
+                    }
+                });
 
-            console.log('📥 Réponse GTK:', { status: response.status, ok: response.ok });
+                console.log('📥 Réponse GTK:', { status: response.status, ok: response.ok });
 
-            // Le cookie GTK est dans les headers de réponse
-            const cookieHeader = response.headers.get('set-cookie');
-            
-            if (cookieHeader && cookieHeader.includes('GTK=')) {
-                const gtkMatch = cookieHeader.match(/GTK=([^;]+)/);
-                if (gtkMatch) {
-                    this.gtkCookie = gtkMatch[1];
-                    console.log('✅ Cookie GTK récupéré');
-                    return true;
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.gtkCookie) {
+                        this.gtkCookie = data.gtkCookie;
+                        console.log('✅ Cookie GTK récupéré via proxy');
+                        return true;
+                    }
+                }
+            } else {
+                // Connexion directe (localhost)
+                const url = `${this.baseURL}/login.awp?gtk=1&v=${this.apiVersion}`;
+                
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'User-Agent': this.userAgent
+                    },
+                    credentials: 'include'
+                });
+
+                console.log('📥 Réponse GTK:', { status: response.status, ok: response.ok });
+
+                // Le cookie GTK est dans les headers de réponse
+                const cookieHeader = response.headers.get('set-cookie');
+                
+                if (cookieHeader && cookieHeader.includes('GTK=')) {
+                    const gtkMatch = cookieHeader.match(/GTK=([^;]+)/);
+                    if (gtkMatch) {
+                        this.gtkCookie = gtkMatch[1];
+                        console.log('✅ Cookie GTK récupéré');
+                        return true;
+                    }
                 }
             }
             
