@@ -87,7 +87,7 @@ class EcoleDirecteAPI {
                 
                 // Améliorer les messages d'erreur pour guider l'utilisateur
                 if (data.code === 505) {
-                    errorMessage = 'Identifiant et/ou mot de passe invalide. Vérifiez que vous utilisez bien votre identifiant EcoleDirecte (tel qu\'il apparaît sur votre compte).';
+                    errorMessage = 'Identifiant et/ou mot de passe invalide. Vérifiez que vous utilisez bien votre identifiant EcoleDirecte (tel qu'il apparaît sur votre compte).';
                 } else if (data.code === 520) {
                     errorMessage = 'Le service EcoleDirecte est temporairement indisponible. Veuillez réessayer dans quelques instants.';
                 }
