@@ -308,10 +308,6 @@ class EcoleDirecteAPI {
                 : `${this.baseURL}/E/${this.accountInfo.id}/viescolaire.awp?verbe=get&`;
 
             const response = await fetch(url, {
-                ? `${this.baseURL}?path=E/${this.accountInfo.id}/viescolaire.awp?verbe=get&`
-                : `${this.baseURL}/E/${this.accountInfo.id}/viescolaire.awp?verbe=get&`;
-
-            const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
