@@ -234,18 +234,43 @@ class EcoleDirecteScraper {
     async confirmConnection() {
         console.log('✅ Confirmation de connexion...');
         
+        // Changer le texte du bouton
+        const confirmBtn = document.querySelector('.ed-confirm-btn');
+        if (confirmBtn) {
+            confirmBtn.disabled = true;
+            confirmBtn.textContent = '⏳ Récupération des données...';
+        }
+
+        try {
+            // Essayer de récupérer les données via l'API
+            const data = await this.fetchDataFromAPI();
+            
+            if (data && data.token) {
+                console.log('✅ Données récupérées avec succès!');
+                this.userData = data;
+            } else {
+                console.log('⚠️ Impossible de récupérer les données automatiquement');
+                this.userData = {
+                    timestamp: new Date().toISOString(),
+                    source: 'manual',
+                    message: 'Connexion confirmée manuellement'
+                };
+            }
+        } catch (error) {
+            console.error('❌ Erreur récupération données:', error);
+            this.userData = {
+                timestamp: new Date().toISOString(),
+                source: 'manual',
+                error: error.message
+            };
+        }
+
+        this.isConnected = true;
+        
         // Fermer la popup
         if (this.popupWindow && !this.popupWindow.closed) {
             this.popupWindow.close();
         }
-
-        // Marquer comme connecté
-        this.userData = {
-            timestamp: new Date().toISOString(),
-            source: 'manual',
-            message: 'Connexion confirmée manuellement'
-        };
-        this.isConnected = true;
         
         // Fermer les overlays
         this.close();
@@ -253,6 +278,35 @@ class EcoleDirecteScraper {
         // Résoudre la promesse
         if (this.resolveConnection) {
             this.resolveConnection(this.userData);
+        }
+    }
+
+    /**
+     * Récupérer les données via l'API EcoleDirecte
+     */
+    async fetchDataFromAPI() {
+        try {
+            // On va utiliser le proxy pour récupérer les données
+            // L'utilisateur doit être connecté sur ecoledirecte.com
+            
+            // Méthode 1: Essayer de récupérer via notre proxy avec les cookies
+            const response = await fetch('/api/proxy?path=login.awp', {
+                method: 'GET',
+                credentials: 'include' // Inclure les cookies
+            });
+
+            if (!response.ok) {
+                throw new Error('API non disponible');
+            }
+
+            // Pour l'instant, on retourne null car on ne peut pas récupérer
+            // les cookies de la popup (Same-Origin Policy)
+            // TODO: Implémenter une solution avec extension navigateur ou autre
+            return null;
+
+        } catch (error) {
+            console.error('Erreur fetchDataFromAPI:', error);
+            return null;
         }
     }
 
