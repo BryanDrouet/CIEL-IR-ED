@@ -21,33 +21,15 @@
         <div id="loginSection" class="section">
             <div class="login-card">
                 <h1>🎓 EcoleDirecte Dashboard</h1>
-                <p class="subtitle">Connexion sécurisée</p>
+                <p class="subtitle">Connectez-vous directement via EcoleDirecte</p>
                 
                 <form id="login-form" autocomplete="on">
-                    <div class="form-group">
-                        <label for="username">Identifiant EcoleDirecte</label>
-                        <input type="text" id="username" name="username" required autocomplete="username webauthn">
-                    </div>
+                    <p style="text-align: center; color: #666; margin-bottom: 20px;">
+                        Cliquez sur le bouton ci-dessous pour vous connecter.<br>
+                        Vos identifiants seront demandés dans la fenêtre EcoleDirecte.
+                    </p>
                     
-                    <div class="form-group">
-                        <label for="password">Mot de passe EcoleDirecte</label>
-                        <div class="password-input-wrapper">
-                            <input type="password" id="password" name="password" required autocomplete="current-password webauthn">
-                            <button type="button" id="togglePassword" class="toggle-password-btn" title="Afficher le mot de passe">
-                                👁️
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="remember-me-container">
-                        <label class="remember-me-label">
-                            <input type="checkbox" id="remember-me" name="rememberMe">
-                            <span class="checkmark"></span>
-                            <span class="label-text">Se souvenir de moi</span>
-                        </label>
-                    </div>
-                    
-                    <button type="submit" class="btn btn-primary">Se connecter sur EcoleDirecte</button>
+                    <button type="submit" class="btn btn-primary">🔐 Se connecter avec EcoleDirecte</button>
                 </form>
                 
                 <div id="loginError" class="error-message"></div>
