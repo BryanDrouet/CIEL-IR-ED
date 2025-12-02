@@ -8,46 +8,30 @@ class SimpleEcoleDirecte {
     }
 
     /**
-     * Redirection simple vers EcoleDirecte avec auto-remplissage des identifiants
+     * Redirection simple vers EcoleDirecte
+     * Note: EcoleDirecte bloque les POST automatiques (405), donc on ouvre juste le site
      */
     loginAndRedirect(username, password) {
-        console.log('🔐 Redirection vers EcoleDirecte...');
+        console.log('🔐 Ouverture d\'EcoleDirecte...');
         
-        // Sauvegarder les identifiants pour auto-remplissage
+        // Sauvegarder les identifiants pour une future utilisation
         if (username) {
             sessionStorage.setItem('ed_username', username);
         }
-        if (password) {
-            sessionStorage.setItem('ed_password', password);
+
+        // Ouvrir EcoleDirecte dans un nouvel onglet
+        const loginWindow = window.open(this.loginUrl, 'EcoleDirecte', 'width=1200,height=800');
+        
+        if (!loginWindow) {
+            return {
+                success: false,
+                message: '⚠️ Les popups sont bloquées. Veuillez autoriser les popups pour ce site.'
+            };
         }
-
-        // Créer un formulaire invisible qui sera soumis
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = this.loginUrl;
-        form.target = '_blank';
-        form.style.display = 'none';
-
-        // Ajouter les champs
-        const usernameField = document.createElement('input');
-        usernameField.type = 'text';
-        usernameField.name = 'identifiant';
-        usernameField.value = username;
-        form.appendChild(usernameField);
-
-        const passwordField = document.createElement('input');
-        passwordField.type = 'password';
-        passwordField.name = 'motdepasse';
-        passwordField.value = password;
-        form.appendChild(passwordField);
-
-        document.body.appendChild(form);
-        form.submit();
-        document.body.removeChild(form);
 
         return {
             success: true,
-            message: 'Redirection vers EcoleDirecte...'
+            message: '✅ EcoleDirecte ouvert - connectez-vous avec vos identifiants'
         };
     }
 
