@@ -5,14 +5,28 @@
 
 class EcoleDirecteAPI {
     constructor() {
-        // Utiliser le proxy Vercel en production, API directe en local
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        // Détecter l'environnement
+        const hostname = window.location.hostname;
+        
+        if (hostname === 'localhost' || hostname === '127.0.0.1') {
+            // Environnement local - API directe
             this.baseURL = 'https://api.ecoledirecte.com/v3';
             this.useProxy = false;
+        } else if (hostname.includes('github.io')) {
+            // GitHub Pages - API directe (CORS peut poser problème)
+            this.baseURL = 'https://api.ecoledirecte.com/v3';
+            this.useProxy = false;
+            console.warn('⚠️ GitHub Pages détecté - utilisez Vercel pour éviter les problèmes CORS');
+        } else if (hostname.includes('vercel.app')) {
+            // Vercel - utiliser le proxy
+            this.baseURL = '/api/proxy';
+            this.useProxy = true;
         } else {
+            // Autre domaine - tenter le proxy
             this.baseURL = '/api/proxy';
             this.useProxy = true;
         }
+        
         console.log(`📡 API Endpoint: ${this.baseURL} (Proxy: ${this.useProxy})`);
         
         this.token = null;
