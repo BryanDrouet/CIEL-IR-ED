@@ -41,6 +41,8 @@ class EcoleDirecteAPI {
      */
     async login(username, password) {
         try {
+            console.log('🔐 Tentative de connexion...', { username, passwordLength: password.length });
+            
             // Préparer les données au format form-urlencoded
             const payload = {
                 identifiant: username,
@@ -54,6 +56,8 @@ class EcoleDirecteAPI {
                 ? `${this.baseURL}?path=login.awp`
                 : `${this.baseURL}/login.awp`;
             
+            console.log('📤 Requête:', { url, useProxy: this.useProxy, bodyLength: formData.toString().length });
+            
             const response = await fetch(url, {
                 method: 'POST',
                 headers: {
@@ -62,18 +66,30 @@ class EcoleDirecteAPI {
                 body: formData.toString()
             });
 
+            console.log('📥 Réponse HTTP:', { status: response.status, ok: response.ok });
+
             if (!response.ok) {
+                const errorText = await response.text();
+                console.error('❌ Erreur serveur:', errorText);
                 throw new Error('Erreur de connexion au serveur EcoleDirecte');
             }
 
             const data = await response.json();
+            console.log('📦 Données reçues:', { code: data.code, message: data.message, hasToken: !!data.token });
 
             if (data.code !== 200) {
+                console.error('❌ Code erreur:', data.code, 'Message:', data.message);
                 throw new Error(data.message || 'Identifiants incorrects');
             }
 
             this.token = data.token;
             this.accountInfo = data.data.accounts[0];
+
+            console.log('✅ Connexion réussie:', { 
+                id: this.accountInfo.id, 
+                nom: this.accountInfo.nom,
+                prenom: this.accountInfo.prenom 
+            });
 
             // Stocker le token dans le localStorage
             localStorage.setItem('edToken', this.token);
@@ -90,7 +106,7 @@ class EcoleDirecteAPI {
             };
 
         } catch (error) {
-            console.error('Erreur de connexion:', error);
+            console.error('❌ Erreur de connexion:', error);
             throw error;
         }
     }
