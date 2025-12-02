@@ -58,6 +58,24 @@ function checkExistingSession() {
         initDashboard();
     } else {
         showLoginSection();
+        // Charger les identifiants sauvegardés si disponibles
+        loadSavedCredentials();
+    }
+}
+
+/**
+ * Charge les identifiants sauvegardés
+ */
+function loadSavedCredentials() {
+    const savedUsername = localStorage.getItem('savedUsername');
+    const rememberMe = localStorage.getItem('rememberMe') === 'true';
+    
+    if (savedUsername) {
+        document.getElementById('username').value = savedUsername;
+    }
+    
+    if (rememberMe) {
+        document.getElementById('rememberMe').checked = true;
     }
 }
 
@@ -121,6 +139,7 @@ async function handleLogin(e) {
     
     const username = document.getElementById('username').value.trim();
     const password = document.getElementById('password').value;
+    const rememberMe = document.getElementById('rememberMe').checked;
     const errorDiv = document.getElementById('loginError');
 
     if (!username || !password) {
@@ -137,6 +156,15 @@ async function handleLogin(e) {
 
         if (!edResult.success) {
             throw new Error('Échec de la connexion à EcoleDirecte');
+        }
+
+        // Sauvegarder les identifiants si demandé
+        if (rememberMe) {
+            localStorage.setItem('savedUsername', username);
+            localStorage.setItem('rememberMe', 'true');
+        } else {
+            localStorage.removeItem('savedUsername');
+            localStorage.removeItem('rememberMe');
         }
 
         // Stocker les informations utilisateur
