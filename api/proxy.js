@@ -67,6 +67,12 @@ export default async function handler(req, res) {
             body: body,
         });
 
+        // Logger tous les headers de réponse pour debug
+        console.log('📋 Headers de réponse EcoleDirecte:');
+        for (const [key, value] of response.headers.entries()) {
+            console.log(`  ${key}: ${value.substring(0, 100)}${value.length > 100 ? '...' : ''}`);
+        }
+
         // Récupérer les cookies de la réponse (compatible Vercel)
         let setCookieHeaders = null;
         
@@ -74,10 +80,14 @@ export default async function handler(req, res) {
         if (response.headers.getSetCookie) {
             // Node.js 18+ / Edge runtime
             setCookieHeaders = response.headers.getSetCookie();
+            console.log('✅ Cookies via getSetCookie():', setCookieHeaders?.length || 0);
         } else if (response.headers.get('set-cookie')) {
             // Fallback
             const cookieHeader = response.headers.get('set-cookie');
             setCookieHeaders = cookieHeader ? [cookieHeader] : null;
+            console.log('✅ Cookies via get(set-cookie):', setCookieHeaders?.length || 0);
+        } else {
+            console.log('❌ Aucune méthode de récupération de cookies disponible');
         }
 
         if (setCookieHeaders && setCookieHeaders.length > 0) {
