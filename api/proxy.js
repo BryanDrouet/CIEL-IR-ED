@@ -50,7 +50,12 @@ export default async function handler(req, res) {
             }
         }
 
-        console.log('Proxy request:', { apiUrl, method: req.method, bodyLength: body?.length });
+        console.log('Proxy request:', { 
+            apiUrl, 
+            method: req.method, 
+            bodyLength: body?.length,
+            hasToken: !!req.headers['x-token']
+        });
 
         // Faire la requête vers EcoleDirecte
         const response = await fetch(apiUrl, {

@@ -133,6 +133,14 @@ body {
     box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
 }
 
+.form-hint {
+    display: block;
+    margin-top: 6px;
+    font-size: 0.85em;
+    color: var(--text-secondary);
+    opacity: 0.8;
+}
+
 /* Se souvenir de moi - Checkbox stylisé */
 .remember-me-container {
     margin-bottom: 24px;
