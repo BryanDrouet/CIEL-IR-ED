@@ -15,12 +15,18 @@ document.addEventListener('DOMContentLoaded', () => {
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            e.stopPropagation();
             
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             const rememberMe = document.getElementById('remember-me').checked;
 
             console.log('📝 Connexion:', { username, rememberMe });
+
+            // Effacer l'URL pour éviter que les identifiants y apparaissent
+            if (window.history.replaceState) {
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
 
             // Sauvegarder le nom d'utilisateur si demandé
             if (rememberMe) {
@@ -47,6 +53,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     showMessage(result.message, 'error');
                 }
             }, 500);
+            
+            return false;
         });
     }
 
