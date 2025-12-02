@@ -187,8 +187,8 @@ class EcoleDirecteScraper {
                 this.resolveConnection(this.userData);
             }
         }
-    }   });
-    }
+    }   
+    
 
     /**
      * Vérifier si l'utilisateur est connecté et scraper les données
