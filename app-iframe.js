@@ -94,6 +94,7 @@ async function handleLogin() {
     const loginSection = document.getElementById('loginSection');
     const dashboardSection = document.getElementById('dashboardSection');
     const loader = document.getElementById('loader');
+    const loginError = document.getElementById('loginError');
 
     // Afficher le loader
     if (loader) {
@@ -111,13 +112,11 @@ async function handleLogin() {
             loader.classList.add('hidden');
         }
 
-        // Maintenant on récupère vraiment les données depuis l'API
-        if (statusDiv) {
-            const statusMsg = document.createElement('p');
-            statusMsg.className = 'status-info';
-            statusMsg.textContent = '📥 Récupération de vos données...';
-            statusDiv.innerHTML = '';
-            statusDiv.appendChild(statusMsg);
+        // Message de récupération des données
+        if (loginError) {
+            loginError.className = 'status-info';
+            loginError.textContent = '📥 Récupération de vos données...';
+            loginError.style.display = 'block';
         }
 
         // Récupérer les données réelles
