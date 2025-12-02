@@ -380,6 +380,12 @@ class EcoleDirecteScraper {
             clearInterval(this.checkInterval);
         }
         this.close();
+        
+        // Rejeter la promesse avec un message spécifique
+        if (this.rejectConnection) {
+            this.rejectConnection(new Error('Connexion annulée par l\'utilisateur'));
+        }
+        
         console.log('❌ Connexion annulée');
     }
 

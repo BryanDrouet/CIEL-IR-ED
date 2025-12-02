@@ -89,11 +89,26 @@ async function handleLogin() {
             loader.classList.add('hidden');
         }
 
+        // Remettre la section de connexion visible
+        if (loginSection) {
+            loginSection.classList.remove('hidden');
+        }
+        if (dashboardSection) {
+            dashboardSection.classList.add('hidden');
+        }
+
         // Afficher l'erreur
         const loginError = document.getElementById('loginError');
         if (loginError) {
-            loginError.textContent = `❌ Erreur: ${error.message}`;
+            loginError.textContent = error.message.includes('annulée') ? 
+                '⚠️ Connexion annulée' : 
+                `❌ Erreur: ${error.message}`;
             loginError.style.display = 'block';
+            
+            // Masquer l'erreur après 5 secondes
+            setTimeout(() => {
+                loginError.style.display = 'none';
+            }, 5000);
         }
     }
 }
