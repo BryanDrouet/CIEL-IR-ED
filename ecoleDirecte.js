@@ -5,27 +5,8 @@
 
 class EcoleDirecteAPI {
     constructor() {
-        // Configuration du proxy en fonction de l'environnement
-        // Pour GitHub Pages, utilisez votre URL Vercel/Netlify
-        
-        if (window.PROXY_URL) {
-            // URL personnalisée définie dans config.js
-            this.baseURL = window.PROXY_URL;
-        } else if (window.location.hostname.includes('github.io')) {
-            // GitHub Pages - utilisez votre proxy Vercel/Netlify
-            // À REMPLACER par votre vraie URL après déploiement du proxy
-            this.baseURL = 'https://VOTRE-PROXY.vercel.app/api';
-            console.warn('⚠️ Configurez window.PROXY_URL dans config.js avec votre URL Vercel/Netlify');
-        } else if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-            // Mode local - peut utiliser le proxy local si disponible
-            this.baseURL = window.location.port === '3000' 
-                ? 'http://localhost:3000/api'
-                : 'https://api.ecoledirecte.com/v3'; // Direct en mode démo
-        } else {
-            // Par défaut
-            this.baseURL = 'https://api.ecoledirecte.com/v3';
-        }
-        
+        // Utilisation directe de l'API EcoleDirecte
+        this.baseURL = 'https://api.ecoledirecte.com/v3';
         console.log(`📡 API Endpoint: ${this.baseURL}`);
         
         this.token = null;
@@ -70,8 +51,9 @@ class EcoleDirecteAPI {
             this.token = data.token;
             this.accountInfo = data.data.accounts[0];
 
-            // Stocker les identifiants de manière sécurisée dans Firebase
-            await this.saveCredentialsToFirebase(username, password);
+            // Stocker le token dans le localStorage
+            localStorage.setItem('edToken', this.token);
+            localStorage.setItem('edAccountInfo', JSON.stringify(this.accountInfo));
 
             return {
                 success: true,

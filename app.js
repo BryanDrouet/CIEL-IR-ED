@@ -19,9 +19,6 @@ let currentUser = null;
  * Initialisation de l'application
  */
 document.addEventListener('DOMContentLoaded', () => {
-    // Initialiser Firebase
-    initFirebase();
-
     // Initialiser les modules
     ecoleDirecteAPI = new EcoleDirecteAPI();
     gradeCalculator = new GradeCalculator();
@@ -43,9 +40,26 @@ document.addEventListener('DOMContentLoaded', () => {
     // Configurer les événements
     setupEventListeners();
 
-    // Vérifier l'état d'authentification
-    firebase.auth().onAuthStateChanged(handleAuthStateChange);
+    // Vérifier si l'utilisateur est déjà connecté
+    checkExistingSession();
 });
+
+/**
+ * Vérifie si une session existe déjà
+ */
+function checkExistingSession() {
+    const token = localStorage.getItem('edToken');
+    const accountInfo = localStorage.getItem('edAccountInfo');
+    
+    if (token && accountInfo) {
+        ecoleDirecteAPI.token = token;
+        ecoleDirecteAPI.accountInfo = JSON.parse(accountInfo);
+        currentUser = ecoleDirecteAPI.accountInfo;
+        initDashboard();
+    } else {
+        showLoginSection();
+    }
+}
 
 /**
  * Initialise Firebase
@@ -95,13 +109,8 @@ function setupEventListeners() {
  * Gère le changement d'état d'authentification
  */
 async function handleAuthStateChange(user) {
-    if (user) {
-        currentUser = user;
-        await initDashboard();
-    } else {
-        currentUser = null;
-        showLoginSection();
-    }
+    // Cette fonction n'est plus utilisée sans Firebase
+    // Conservée pour compatibilité
 }
 
 /**
@@ -130,10 +139,11 @@ async function handleLogin(e) {
             throw new Error('Échec de la connexion à EcoleDirecte');
         }
 
-        // Authentifier avec Firebase (anonyme pour cet exemple)
-        await firebase.auth().signInAnonymously();
-
-        // Le reste sera géré par onAuthStateChanged
+        // Stocker les informations utilisateur
+        currentUser = edResult.user;
+        
+        // Initialiser le dashboard
+        await initDashboard();
 
     } catch (error) {
         console.error('Erreur de connexion:', error);
@@ -157,8 +167,9 @@ async function handleLogout() {
             chartsManager.destroyAllCharts();
         }
 
-        // Déconnexion Firebase
-        await firebase.auth().signOut();
+        // Nettoyer le localStorage
+        localStorage.removeItem('edToken');
+        localStorage.removeItem('edAccountInfo');
 
         // Réinitialiser les instances
         ecoleDirecteAPI = new EcoleDirecteAPI();
@@ -168,6 +179,11 @@ async function handleLogout() {
         messagingManager = new MessagingManager();
         homeworkManager = new HomeworkManager();
         schoolLifeManager = new SchoolLifeManager();
+        
+        currentUser = null;
+        
+        // Afficher la page de connexion
+        showLoginSection();
 
     } catch (error) {
         console.error('Erreur de déconnexion:', error);
