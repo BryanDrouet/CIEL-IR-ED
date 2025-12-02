@@ -49,6 +49,8 @@ class EcoleDirecteAPI {
             if (this.useProxy) {
                 const url = `${this.baseURL}?path=login.awp?gtk=1&v=${this.apiVersion}&getGtkCookie=true`;
                 
+                console.log('🌐 URL GTK:', url);
+                
                 const response = await fetch(url, {
                     method: 'GET',
                     headers: {
@@ -60,11 +62,18 @@ class EcoleDirecteAPI {
 
                 if (response.ok) {
                     const data = await response.json();
+                    console.log('📦 Données GTK reçues:', data);
+                    
                     if (data.gtkCookie) {
                         this.gtkCookie = data.gtkCookie;
-                        console.log('✅ Cookie GTK récupéré via proxy');
+                        console.log('✅ Cookie GTK récupéré via proxy:', this.gtkCookie.substring(0, 50) + '...');
                         return true;
+                    } else {
+                        console.error('❌ Pas de gtkCookie dans la réponse:', data);
                     }
+                } else {
+                    const errorText = await response.text();
+                    console.error('❌ Erreur HTTP GTK:', errorText);
                 }
             } else {
                 // Connexion directe (localhost)
@@ -112,7 +121,8 @@ class EcoleDirecteAPI {
             console.log('🔐 Tentative de connexion...', { username, passwordLength: password.length });
             
             // Étape 1 : Récupérer le cookie GTK
-            await this.getGtkCookie();
+            const gtkSuccess = await this.getGtkCookie();
+            console.log('🔑 Résultat récupération GTK:', { success: gtkSuccess, hasGtk: !!this.gtkCookie });
             
             // Étape 2 : Se connecter avec le cookie GTK
             const payload = {
@@ -130,7 +140,6 @@ class EcoleDirecteAPI {
                 : `${this.baseURL}/login.awp?v=${this.apiVersion}`;
             
             console.log('📤 Requête:', { url, useProxy: this.useProxy, hasGtk: !!this.gtkCookie });
-            
             const headers = {
                 'Content-Type': 'application/x-www-form-urlencoded',
                 'User-Agent': this.userAgent
@@ -139,7 +148,10 @@ class EcoleDirecteAPI {
             // Ajouter le cookie GTK si disponible
             if (this.gtkCookie) {
                 headers['X-Gtk'] = this.gtkCookie;
-                console.log('🔑 Header X-Gtk ajouté');
+                console.log('🔑 Header X-Gtk ajouté:', this.gtkCookie.substring(0, 50) + '...');
+            } else {
+                console.warn('⚠️ Pas de cookie GTK disponible pour le login !');
+            }   console.log('🔑 Header X-Gtk ajouté');
             }
             
             const response = await fetch(url, {

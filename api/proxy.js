@@ -86,22 +86,40 @@ export default async function handler(req, res) {
 
         // Pour les requêtes GET spéciales (récupération GTK), extraire et retourner le cookie
         if (req.method === 'GET' && getGtkCookie === 'true') {
-            console.log('Proxy GET GTK response:', { status: response.status, hasCookies: !!setCookieHeaders });
+            console.log('🔍 Proxy GET GTK response:', { 
+                status: response.status, 
+                hasCookies: !!setCookieHeaders,
+                cookiesCount: setCookieHeaders?.length || 0
+            });
             
             let gtkCookie = null;
             if (setCookieHeaders && setCookieHeaders.length > 0) {
+                console.log('🍪 Cookies bruts:', setCookieHeaders);
                 const cookieString = setCookieHeaders.join(';');
+                console.log('🍪 Cookie string:', cookieString.substring(0, 200) + '...');
                 const gtkMatch = cookieString.match(/GTK=([^;]+)/);
                 if (gtkMatch) {
                     gtkCookie = gtkMatch[1];
+                    console.log('✅ GTK extrait:', gtkCookie.substring(0, 50) + '...');
+                } else {
+                    console.error('❌ Pattern GTK= non trouvé dans:', cookieString.substring(0, 100));
                 }
+            } else {
+                console.error('❌ Aucun cookie Set-Cookie dans la réponse');
             }
             
-            res.status(200).json({ 
+            const result = {
                 success: !!gtkCookie, 
                 gtkCookie: gtkCookie,
-                status: response.status 
-            });
+                status: response.status,
+                debug: {
+                    hasCookies: !!setCookieHeaders,
+                    cookiesCount: setCookieHeaders?.length || 0
+                }
+            };
+            
+            console.log('📤 Retour JSON GTK:', result);
+            res.status(200).json(result);
             return;
         }
 
