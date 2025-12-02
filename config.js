@@ -55,4 +55,4 @@ window.firebaseConfig = firebaseConfig;
  * Après avoir déployé le proxy sur Vercel/Netlify, remplacez l'URL ci-dessous
  * Exemple: window.PROXY_URL = 'https://mon-proxy.vercel.app/api';
  */
-window.PROXY_URL = null; // À configurer après déploiement du proxy
+window.PROXY_URL = 'https://ciel-ir-ed.vercel.app/api';
