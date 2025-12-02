@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Firebase - EcoleDirecte Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1a1a2e;
+            color: #fff;
+        }
+        .test-card {
+            background: #16213e;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #0f3460;
+        }
+        .test-card.success {
+            border-left-color: #4caf50;
+        }
+        .test-card.error {
+            border-left-color: #f44336;
+        }
+        .test-card.warning {
+            border-left-color: #ff9800;
+        }
+        h1 {
+            color: #4caf50;
+        }
+        h3 {
+            margin-top: 0;
+        }
+        code {
+            background: #0f3460;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .status.ok {
+            background: #4caf50;
+            color: white;
+        }
+        .status.fail {
+            background: #f44336;
+            color: white;
+        }
+        .status.pending {
+            background: #ff9800;
+            color: white;
+        }
+        button {
+            background: #4caf50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        #logs {
+            background: #0f3460;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .log-line {
+            margin: 5px 0;
+        }
+        .log-error {
+            color: #f44336;
+        }
+        .log-success {
+            color: #4caf50;
+        }
+        .log-info {
+            color: #2196f3;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔥 Test de Configuration Firebase</h1>
+    
+    <div id="test1" class="test-card">
+        <h3>1. Firebase SDK chargé <span id="status1" class="status pending">TEST...</span></h3>
+        <p id="result1">Vérification en cours...</p>
+    </div>
+
+    <div id="test2" class="test-card">
+        <h3>2. Configuration Firebase <span id="status2" class="status pending">TEST...</span></h3>
+        <p id="result2">Vérification en cours...</p>
+    </div>
+
+    <div id="test3" class="test-card">
+        <h3>3. Initialisation Firebase <span id="status3" class="status pending">TEST...</span></h3>
+        <p id="result3">Vérification en cours...</p>
+    </div>
+
+    <div id="test4" class="test-card">
+        <h3>4. Authentification anonyme <span id="status4" class="status pending">EN ATTENTE</span></h3>
+        <p id="result4">Cliquez sur le bouton pour tester</p>
+        <button onclick="testAuth()">Tester l'authentification</button>
+    </div>
+
+    <div id="test5" class="test-card">
+        <h3>5. Firestore Database <span id="status5" class="status pending">EN ATTENTE</span></h3>
+        <p id="result5">Cliquez sur le bouton pour tester</p>
+        <button onclick="testFirestore()">Tester Firestore</button>
+    </div>
+
+    <div class="test-card">
+        <h3>📋 Logs</h3>
+        <div id="logs"></div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
+    <!-- Configuration -->
+    <script src="config.js"></script>
+
+    <script>
+        // Fonction de log
+        function log(message, type = 'info') {
+            const logsDiv = document.getElementById('logs');
+            const line = document.createElement('div');
+            line.className = `log-line log-${type}`;
+            line.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logsDiv.appendChild(line);
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+            console.log(message);
+        }
+
+        function setTestResult(testNum, success, message) {
+            const card = document.getElementById(`test${testNum}`);
+            const status = document.getElementById(`status${testNum}`);
+            const result = document.getElementById(`result${testNum}`);
+            
+            card.className = `test-card ${success ? 'success' : 'error'}`;
+            status.className = `status ${success ? 'ok' : 'fail'}`;
+            status.textContent = success ? '✅ OK' : '❌ ERREUR';
+            result.textContent = message;
+        }
+
+        // Test 1: Firebase SDK
+        log('Test 1: Vérification du SDK Firebase...');
+        if (typeof firebase !== 'undefined') {
+            setTestResult(1, true, `Firebase SDK version ${firebase.SDK_VERSION} chargé avec succès`);
+            log('✅ Firebase SDK chargé', 'success');
+        } else {
+            setTestResult(1, false, 'Firebase SDK non trouvé. Vérifiez les balises <script>');
+            log('❌ Firebase SDK non trouvé', 'error');
+        }
+
+        // Test 2: Configuration
+        log('Test 2: Vérification de la configuration...');
+        if (typeof firebaseConfig !== 'undefined') {
+            const hasAllKeys = firebaseConfig.apiKey && 
+                             firebaseConfig.authDomain && 
+                             firebaseConfig.projectId;
+            
+            if (hasAllKeys && !firebaseConfig.apiKey.includes('VOTRE_')) {
+                setTestResult(2, true, `Configuration OK - Projet: ${firebaseConfig.projectId}`);
+                log(`✅ Configuration valide pour le projet ${firebaseConfig.projectId}`, 'success');
+            } else {
+                setTestResult(2, false, 'Configuration incomplète. Vérifiez config.js');
+                log('❌ Configuration incomplète ou valeurs par défaut détectées', 'error');
+            }
+        } else {
+            setTestResult(2, false, 'Variable firebaseConfig non trouvée');
+            log('❌ firebaseConfig non définie', 'error');
+        }
+
+        // Test 3: Initialisation
+        log('Test 3: Initialisation de Firebase...');
+        try {
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+                log('Firebase initialisé', 'info');
+            } else {
+                log('Firebase déjà initialisé', 'info');
+            }
+            
+            setTestResult(3, true, 'Firebase initialisé avec succès');
+            log('✅ Firebase initialisé correctement', 'success');
+        } catch (error) {
+            setTestResult(3, false, `Erreur d'initialisation: ${error.message}`);
+            log(`❌ Erreur d'initialisation: ${error.message}`, 'error');
+        }
+
+        // Test 4: Authentification
+        async function testAuth() {
+            log('Test 4: Test de l\'authentification anonyme...');
+            const status = document.getElementById('status4');
+            status.textContent = 'TEST...';
+            status.className = 'status pending';
+            
+            try {
+                const userCredential = await firebase.auth().signInAnonymously();
+                const uid = userCredential.user.uid;
+                
+                setTestResult(4, true, `Authentification réussie ! UID: ${uid.substring(0, 10)}...`);
+                log(`✅ Authentification réussie avec UID: ${uid}`, 'success');
+                
+                // Déconnexion après le test
+                await firebase.auth().signOut();
+                log('Déconnexion effectuée', 'info');
+            } catch (error) {
+                let errorMsg = error.message;
+                if (error.code === 'auth/operation-not-allowed') {
+                    errorMsg = 'L\'authentification anonyme n\'est pas activée. Activez-la dans Firebase Console > Authentication > Sign-in method';
+                }
+                
+                setTestResult(4, false, errorMsg);
+                log(`❌ Erreur d'authentification: ${errorMsg}`, 'error');
+            }
+        }
+
+        // Test 5: Firestore
+        async function testFirestore() {
+            log('Test 5: Test de Firestore Database...');
+            const status = document.getElementById('status5');
+            status.textContent = 'TEST...';
+            status.className = 'status pending';
+            
+            try {
+                // D'abord s'authentifier
+                const userCredential = await firebase.auth().signInAnonymously();
+                const uid = userCredential.user.uid;
+                log(`Authentifié avec UID: ${uid.substring(0, 10)}...`, 'info');
+                
+                // Tester l'écriture
+                const db = firebase.firestore();
+                const testDoc = {
+                    message: 'Test de configuration',
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                
+                await db.collection('users').doc(uid).collection('test').add(testDoc);
+                log('✅ Document créé dans Firestore', 'success');
+                
+                // Tester la lecture
+                const snapshot = await db.collection('users').doc(uid).collection('test').limit(1).get();
+                
+                if (!snapshot.empty) {
+                    setTestResult(5, true, `Firestore OK - ${snapshot.size} document(s) trouvé(s)`);
+                    log(`✅ Lecture réussie: ${snapshot.size} document(s)`, 'success');
+                } else {
+                    setTestResult(5, true, 'Firestore OK mais aucun document trouvé');
+                    log('⚠️ Firestore fonctionne mais aucun document', 'info');
+                }
+                
+                // Déconnexion
+                await firebase.auth().signOut();
+                
+            } catch (error) {
+                let errorMsg = error.message;
+                
+                if (error.code === 'permission-denied') {
+                    errorMsg = 'Permission refusée. Vérifiez les règles de sécurité Firestore.';
+                } else if (error.message.includes('firestore')) {
+                    errorMsg = 'Firestore n\'est pas encore créé. Créez-le dans Firebase Console > Firestore Database';
+                }
+                
+                setTestResult(5, false, errorMsg);
+                log(`❌ Erreur Firestore: ${errorMsg}`, 'error');
+            }
+        }
+
+        log('Tests automatiques terminés. Cliquez sur les boutons pour les tests manuels.', 'success');
+    </script>
+</body>
+</html>

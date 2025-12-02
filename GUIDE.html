@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guide de configuration - EcoleDirecte Dashboard</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+            line-height: 1.6;
+        }
+        .container {
+            background: white;
+            border-radius: 10px;
+            padding: 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #4A90E2;
+            border-bottom: 3px solid #4A90E2;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #333;
+            margin-top: 30px;
+        }
+        .step {
+            background: #f8f9fa;
+            border-left: 4px solid #4A90E2;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .step h3 {
+            margin-top: 0;
+            color: #4A90E2;
+        }
+        code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #d63384;
+        }
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .success {
+            background: #d1e7dd;
+            border-left: 4px solid #198754;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        a {
+            color: #4A90E2;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        ul {
+            margin-left: 20px;
+        }
+        .code-block {
+            background: #1a1a2e;
+            color: #ffffff;
+            padding: 20px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #4A90E2;
+            color: white;
+            border-radius: 5px;
+            text-decoration: none;
+            margin-top: 20px;
+        }
+        .btn:hover {
+            background: #357abd;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎓 Guide de configuration - EcoleDirecte Dashboard</h1>
+        
+        <p>Bienvenue ! Ce guide vous aidera à configurer votre application pas à pas.</p>
+
+        <h2>📋 Vue d'ensemble</h2>
+        <p>Ce projet nécessite une configuration Firebase pour fonctionner. Ne vous inquiétez pas, c'est gratuit et ça prend 10 minutes !</p>
+
+        <div class="step">
+            <h3>Étape 1 : Créer un projet Firebase</h3>
+            <ol>
+                <li>Rendez-vous sur <a href="https://console.firebase.google.com/" target="_blank">Firebase Console</a></li>
+                <li>Connectez-vous avec votre compte Google</li>
+                <li>Cliquez sur <strong>"Ajouter un projet"</strong></li>
+                <li>Donnez un nom à votre projet (ex: "ecoledirecte-dashboard")</li>
+                <li>Désactivez Google Analytics (pas nécessaire)</li>
+                <li>Cliquez sur <strong>"Créer le projet"</strong></li>
+            </ol>
+        </div>
+
+        <div class="step">
+            <h3>Étape 2 : Activer l'authentification</h3>
+            <ol>
+                <li>Dans le menu latéral, cliquez sur <strong>"Authentication"</strong></li>
+                <li>Cliquez sur <strong>"Commencer"</strong></li>
+                <li>Dans l'onglet <strong>"Sign-in method"</strong></li>
+                <li>Activez le fournisseur <strong>"Anonyme"</strong></li>
+                <li>Cliquez sur <strong>"Enregistrer"</strong></li>
+            </ol>
+        </div>
+
+        <div class="step">
+            <h3>Étape 3 : Créer une base de données Firestore</h3>
+            <ol>
+                <li>Dans le menu latéral, cliquez sur <strong>"Firestore Database"</strong></li>
+                <li>Cliquez sur <strong>"Créer une base de données"</strong></li>
+                <li>Sélectionnez <strong>"Commencer en mode test"</strong></li>
+                <li>Choisissez une région (ex: europe-west1)</li>
+                <li>Cliquez sur <strong>"Activer"</strong></li>
+            </ol>
+        </div>
+
+        <div class="step">
+            <h3>Étape 4 : Configurer les règles de sécurité</h3>
+            <ol>
+                <li>Dans Firestore, allez dans l'onglet <strong>"Règles"</strong></li>
+                <li>Remplacez le contenu par :</li>
+            </ol>
+            <div class="code-block">
+                <pre>rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      match /{document=**} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+  }
+}</pre>
+            </div>
+            <li>Cliquez sur <strong>"Publier"</strong></li>
+        </div>
+
+        <div class="step">
+            <h3>Étape 5 : Obtenir vos clés de configuration</h3>
+            <ol>
+                <li>Cliquez sur l'icône ⚙️ (engrenage) > <strong>"Paramètres du projet"</strong></li>
+                <li>Descendez jusqu'à <strong>"Vos applications"</strong></li>
+                <li>Cliquez sur le bouton <strong>"Web"</strong> (&lt;/&gt;)</li>
+                <li>Donnez un nom à votre app (ex: "Dashboard")</li>
+                <li>Ne cochez PAS "Firebase Hosting"</li>
+                <li>Cliquez sur <strong>"Enregistrer l'application"</strong></li>
+                <li><strong>Copiez l'objet firebaseConfig qui s'affiche</strong></li>
+            </ol>
+        </div>
+
+        <div class="step">
+            <h3>Étape 6 : Configurer votre application</h3>
+            <ol>
+                <li>Ouvrez le fichier <code>config.js</code> dans un éditeur de texte</li>
+                <li>Remplacez les valeurs par celles que vous avez copiées :</li>
+            </ol>
+            <div class="code-block">
+                <pre>const firebaseConfig = {
+    apiKey: "AIza...",  // Votre clé ici
+    authDomain: "votre-projet.firebaseapp.com",
+    projectId: "votre-projet",
+    storageBucket: "votre-projet.appspot.com",
+    messagingSenderId: "123456789",
+    appId: "1:123456789:web:abcdef"
+};</pre>
+            </div>
+            <li>Enregistrez le fichier</li>
+        </div>
+
+        <div class="success">
+            <h3>✅ Configuration terminée !</h3>
+            <p>Vous pouvez maintenant ouvrir <code>index.html</code> dans votre navigateur et vous connecter avec vos identifiants EcoleDirecte.</p>
+        </div>
+
+        <h2>🔔 Configuration des notifications (Optionnel)</h2>
+        
+        <div class="step">
+            <h3>Pour activer les notifications push :</h3>
+            <ol>
+                <li>Dans Firebase Console, allez dans <strong>"Cloud Messaging"</strong></li>
+                <li>Sous <strong>"Web Push certificates"</strong></li>
+                <li>Cliquez sur <strong>"Générer une paire de clés"</strong></li>
+                <li>Copiez la clé publique VAPID</li>
+                <li>Dans <code>notifications.js</code>, ligne 41, remplacez :</li>
+            </ol>
+            <div class="code-block">
+                <pre>vapidKey: 'VOTRE_VAPID_KEY'  // Collez votre clé ici</pre>
+            </div>
+        </div>
+
+        <div class="warning">
+            <h3>⚠️ Important - Sécurité</h3>
+            <ul>
+                <li><strong>Ne partagez JAMAIS</strong> vos clés Firebase publiquement</li>
+                <li>Ne les mettez pas sur GitHub ou autre dépôt public</li>
+                <li>Les règles Firestore protègent vos données</li>
+                <li>Pour la production, passez en mode production (pas test)</li>
+            </ul>
+        </div>
+
+        <h2>🐛 Dépannage</h2>
+        
+        <div class="step">
+            <h3>Problèmes courants :</h3>
+            <p><strong>Erreur "Firebase not defined"</strong></p>
+            <ul>
+                <li>Vérifiez que vous avez bien configuré <code>config.js</code></li>
+                <li>Vérifiez votre connexion internet</li>
+            </ul>
+
+            <p><strong>Erreur "Permission denied"</strong></p>
+            <ul>
+                <li>Vérifiez que les règles Firestore sont bien configurées</li>
+                <li>Vérifiez que l'authentification anonyme est activée</li>
+            </ul>
+
+            <p><strong>Pas de données affichées</strong></p>
+            <ul>
+                <li>Vérifiez vos identifiants EcoleDirecte</li>
+                <li>Ouvrez la console du navigateur (F12) pour voir les erreurs</li>
+            </ul>
+        </div>
+
+        <h2>🚀 Prêt à démarrer ?</h2>
+        <p>Une fois tout configuré, ouvrez simplement <code>index.html</code> dans votre navigateur préféré !</p>
+        
+        <a href="index.html" class="btn">Lancer l'application →</a>
+
+        <hr style="margin: 40px 0;">
+        
+        <p style="text-align: center; color: #666;">
+            <small>
+                Besoin d'aide ? Vérifiez la console du navigateur (F12) pour les messages d'erreur.<br>
+                Ce projet est fourni à des fins éducatives uniquement.
+            </small>
+        </p>
+    </div>
+</body>
+</html>

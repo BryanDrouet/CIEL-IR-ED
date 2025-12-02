@@ -1,0 +1,446 @@
+/* Styles étendus pour les nouvelles fonctionnalités */
+
+/* Emploi du temps */
+.schedule-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.schedule-view {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid var(--border-color);
+    overflow-x: auto;
+}
+
+.schedule-grid {
+    display: grid;
+    grid-template-columns: 80px repeat(5, 1fr);
+    gap: 10px;
+    min-width: 800px;
+}
+
+.schedule-header {
+    text-align: center;
+    padding: 15px;
+    background: var(--dark-bg);
+    border-radius: 8px;
+    font-weight: bold;
+}
+
+.schedule-time {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    background: var(--dark-bg);
+    border-radius: 8px;
+    font-size: 0.85em;
+    color: var(--text-secondary);
+}
+
+.schedule-slot {
+    padding: 15px;
+    background: var(--dark-bg);
+    border-radius: 8px;
+    border-left: 4px solid transparent;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.schedule-slot.has-course {
+    background: linear-gradient(135deg, rgba(74, 144, 226, 0.2), var(--dark-bg));
+    border-left-color: var(--primary-color);
+}
+
+.schedule-slot.has-course:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(74, 144, 226, 0.2);
+}
+
+.course-name {
+    font-weight: bold;
+    margin-bottom: 5px;
+    font-size: 0.9em;
+}
+
+.course-teacher {
+    font-size: 0.8em;
+    color: var(--text-secondary);
+    margin-bottom: 3px;
+}
+
+.course-room {
+    font-size: 0.75em;
+    color: var(--primary-color);
+}
+
+/* Messagerie */
+.message-controls {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.message-filters {
+    display: flex;
+    gap: 10px;
+}
+
+.filter-btn {
+    padding: 8px 16px;
+    background: transparent;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.filter-btn:hover {
+    background: var(--border-color);
+}
+
+.filter-btn.active {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+
+.messages-view {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+}
+
+.messages-list {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 15px;
+    border: 1px solid var(--border-color);
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.message-item {
+    padding: 15px;
+    background: var(--dark-bg);
+    border-radius: 8px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.3s;
+    border-left: 4px solid transparent;
+}
+
+.message-item:hover {
+    transform: translateX(5px);
+    border-left-color: var(--primary-color);
+}
+
+.message-item.unread {
+    background: rgba(74, 144, 226, 0.1);
+    border-left-color: var(--primary-color);
+    font-weight: 600;
+}
+
+.message-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.message-sender {
+    font-weight: bold;
+    color: var(--text-primary);
+}
+
+.message-date {
+    font-size: 0.85em;
+    color: var(--text-secondary);
+}
+
+.message-subject {
+    color: var(--text-primary);
+    margin-bottom: 5px;
+}
+
+.message-preview {
+    font-size: 0.9em;
+    color: var(--text-secondary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.message-detail {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 25px;
+    border: 1px solid var(--border-color);
+}
+
+.back-btn {
+    margin-bottom: 20px;
+}
+
+/* Cahier de texte */
+.homework-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.filter-select {
+    padding: 10px 15px;
+    background: var(--dark-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-primary);
+    cursor: pointer;
+    font-size: 0.95em;
+}
+
+.homework-view {
+    display: grid;
+    gap: 15px;
+}
+
+.homework-item {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid var(--border-color);
+    border-left: 4px solid var(--primary-color);
+}
+
+.homework-item.done {
+    opacity: 0.6;
+    border-left-color: var(--success-color);
+}
+
+.homework-item.late {
+    border-left-color: var(--danger-color);
+    background: rgba(231, 76, 60, 0.05);
+}
+
+.homework-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.homework-subject {
+    font-weight: bold;
+    font-size: 1.1em;
+    color: var(--primary-color);
+}
+
+.homework-date {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--text-secondary);
+    font-size: 0.9em;
+}
+
+.homework-content {
+    color: var(--text-primary);
+    line-height: 1.6;
+    margin-bottom: 15px;
+}
+
+.homework-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.homework-checkbox {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+/* Vie scolaire */
+.schoollife-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.schoollife-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid var(--border-color);
+}
+
+.schoollife-card h3 {
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.schoollife-item {
+    padding: 12px;
+    background: var(--dark-bg);
+    border-radius: 8px;
+    margin-bottom: 10px;
+    border-left: 4px solid var(--warning-color);
+}
+
+.schoollife-item.absence {
+    border-left-color: var(--danger-color);
+}
+
+.schoollife-item.delay {
+    border-left-color: var(--warning-color);
+}
+
+.schoollife-item.sanction {
+    border-left-color: var(--danger-color);
+}
+
+.schoollife-item.encouragement {
+    border-left-color: var(--success-color);
+}
+
+.schoollife-date {
+    font-size: 0.85em;
+    color: var(--text-secondary);
+    margin-bottom: 5px;
+}
+
+.schoollife-reason {
+    color: var(--text-primary);
+}
+
+.schoollife-status {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.75em;
+    margin-top: 5px;
+}
+
+.schoollife-status.justified {
+    background: var(--success-color);
+    color: white;
+}
+
+.schoollife-status.not-justified {
+    background: var(--danger-color);
+    color: white;
+}
+
+/* Vie de classe */
+.classlife-view {
+    display: grid;
+    gap: 20px;
+}
+
+.classlife-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 25px;
+    border: 1px solid var(--border-color);
+}
+
+.classlife-card h3 {
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.announcement-item {
+    padding: 15px;
+    background: var(--dark-bg);
+    border-radius: 8px;
+    margin-bottom: 15px;
+    border-left: 4px solid var(--secondary-color);
+}
+
+.announcement-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.announcement-title {
+    font-weight: bold;
+    color: var(--text-primary);
+}
+
+.announcement-date {
+    font-size: 0.85em;
+    color: var(--text-secondary);
+}
+
+.announcement-content {
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.event-item {
+    padding: 15px;
+    background: var(--dark-bg);
+    border-radius: 8px;
+    margin-bottom: 10px;
+    border-left: 4px solid var(--primary-color);
+}
+
+.event-date {
+    font-weight: bold;
+    color: var(--primary-color);
+    margin-bottom: 5px;
+}
+
+.event-title {
+    color: var(--text-primary);
+    margin-bottom: 3px;
+}
+
+.event-location {
+    font-size: 0.85em;
+    color: var(--text-secondary);
+}
+
+.document-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    background: var(--dark-bg);
+    border-radius: 8px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.document-item:hover {
+    background: var(--border-color);
+    transform: translateX(5px);
+}
+
+.document-icon {
+    font-size: 1.5em;
+}
+
+.document-info {
+    flex: 1;
+}
+
+.document-name {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.document-size {
+    font-size: 0.8em;
+    color: var(--text-secondary);
+}

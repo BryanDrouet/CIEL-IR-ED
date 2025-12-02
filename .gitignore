@@ -1,0 +1,40 @@
+# Ne pas committer les fichiers sensibles
+# Configuration locale (non versionnée)
+config.local.js
+
+# Fichiers Node.js (non nécessaires pour GitHub Pages)
+node_modules/
+package-lock.json
+
+# Fichiers Python (non nécessaires pour GitHub Pages)
+__pycache__/
+*.pyc
+*.pyo
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Fichiers IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+
+# Variables d'environnement
+.env
+.env.local
+.env
+*.log
+node_modules/
+.DS_Store
+Thumbs.db
+
+# Fichiers de configuration locale
+firebase-debug.log
+.firebase/
