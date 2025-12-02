@@ -30,6 +30,52 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /**
+ * Se connecter à EcoleDirecte via l'API
+ */
+async function loginToEcoleDirecte(username, password) {
+    try {
+        const payload = {
+            identifiant: username,
+            motdepasse: password
+        };
+
+        const response = await fetch('/api/proxy?path=login.awp', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: `data=${encodeURIComponent(JSON.stringify(payload))}`
+        });
+
+        if (!response.ok) {
+            throw new Error('Erreur de connexion');
+        }
+
+        const data = await response.json();
+        
+        if (data.code === 200) {
+            return {
+                success: true,
+                token: data.token,
+                account: data.data.accounts[0]
+            };
+        } else {
+            return {
+                success: false,
+                error: data.message || 'Identifiants invalides'
+            };
+        }
+        
+    } catch (error) {
+        console.error('Erreur loginToEcoleDirecte:', error);
+        return {
+            success: false,
+            error: error.message
+        };
+    }
+}
+
+/**
  * Récupérer les données EcoleDirecte via l'API
  */
 async function fetchEcoleDirecteData(token, accountId) {
@@ -146,56 +192,62 @@ async function handleLogin() {
     const dashboardSection = document.getElementById('dashboardSection');
     const loader = document.getElementById('loader');
     const loginError = document.getElementById('loginError');
+    
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    const rememberMe = document.getElementById('remember-me').checked;
+
+    // Sauvegarder le nom d'utilisateur si demandé
+    if (rememberMe) {
+        localStorage.setItem('ed_saved_username', username);
+    } else {
+        localStorage.removeItem('ed_saved_username');
+    }
 
     // Afficher le loader
     if (loader) {
         loader.classList.remove('hidden');
     }
 
+    if (loginError) {
+        loginError.style.display = 'none';
+    }
+
     try {
-        // Ouvrir l'iframe et attendre la connexion
-        const data = await window.edScraper.connect();
+        // Connexion via l'API EcoleDirecte
+        console.log('📡 Connexion à l\'API EcoleDirecte...');
         
-        console.log('✅ Connexion réussie!', data);
+        const loginResult = await loginToEcoleDirecte(username, password);
+        
+        if (!loginResult.success) {
+            throw new Error(loginResult.error || 'Identifiants incorrects');
+        }
+
+        console.log('✅ Connexion réussie!');
 
         // Masquer le loader
         if (loader) {
             loader.classList.add('hidden');
         }
 
-        // Message de récupération des données
-        if (loginError) {
-            loginError.className = 'status-info';
-            loginError.textContent = '📥 Récupération de vos données...';
-            loginError.style.display = 'block';
-        }
-
-        // Récupérer les données réelles
-        const realData = await fetchEcoleDirecteData(data.token, data.account ? data.account.id : null);
+        // Récupérer toutes les données
+        const fullData = await fetchEcoleDirecteData(loginResult.token, loginResult.account.id);
         
-        if (realData) {
-            // Fusionner avec les données du compte
-            const fullData = {
-                ...data,
-                ...realData
-            };
-            
-            // Sauvegarder les données
-            if (fullData.token) {
-                localStorage.setItem('ed_token', fullData.token);
-            }
-            if (fullData.account) {
-                localStorage.setItem('ed_account', JSON.stringify(fullData.account));
-            }
-            localStorage.setItem('ed_data', JSON.stringify(fullData));
-            localStorage.setItem('ed_last_sync', new Date().toISOString());
+        // Fusionner avec les données du compte
+        const completeData = {
+            token: loginResult.token,
+            account: loginResult.account,
+            ...fullData
+        };
+        
+        // Sauvegarder les données
+        localStorage.setItem('ed_token', loginResult.token);
+        localStorage.setItem('ed_account', JSON.stringify(loginResult.account));
+        localStorage.setItem('ed_data', JSON.stringify(completeData));
+        localStorage.setItem('ed_last_sync', new Date().toISOString());
 
-            // Afficher le dashboard
-            displayDashboard(fullData.account || {});
-        } else {
-            // Pas de données récupérées, afficher quand même le dashboard
-            displayDashboard(data.account || {});
-        }
+        // Afficher le dashboard
+        displayDashboard(loginResult.account);
 
     } catch (error) {
         console.error('❌ Erreur de connexion:', error);
