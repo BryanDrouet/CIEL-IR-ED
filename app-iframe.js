@@ -179,12 +179,6 @@ async function handleLogin() {
                 ...data,
                 ...realData
             };
-        if (realData) {
-            // Fusionner avec les données du compte
-            const fullData = {
-                ...data,
-                ...realData
-            };
             
             // Sauvegarder les données
             if (fullData.token) {
@@ -200,7 +194,7 @@ async function handleLogin() {
             displayDashboard(fullData.account || {});
         } else {
             // Pas de données récupérées, afficher quand même le dashboard
-            displayDashboard({});
+            displayDashboard(data.account || {});
         }
 
     } catch (error) {
