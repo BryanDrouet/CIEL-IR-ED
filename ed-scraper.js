@@ -1,168 +1,231 @@
 /**
- * Scraper EcoleDirecte via iframe
- * Ouvre EcoleDirecte, attend la connexion, scrape les données, puis ferme
+ * Scraper EcoleDirecte via popup
+ * Ouvre EcoleDirecte dans une nouvelle fenêtre, attend la connexion
  */
 
 class EcoleDirecteScraper {
     constructor() {
         this.loginUrl = 'https://www.ecoledirecte.com/';
-        this.iframe = null;
+        this.popupWindow = null;
         this.isConnected = false;
         this.userData = null;
         this.checkInterval = null;
+        this.resolveConnection = null;
+        this.rejectConnection = null;
     }
 
     /**
-     * Ouvrir EcoleDirecte dans une iframe et attendre la connexion
+     * Ouvrir EcoleDirecte dans une nouvelle fenêtre
      */
     async connect() {
         return new Promise((resolve, reject) => {
-            console.log('🌐 Ouverture d\'EcoleDirecte...');
+            console.log('🌐 Ouverture d\'EcoleDirecte dans une nouvelle fenêtre...');
 
-            // Créer l'overlay
-            const overlay = document.createElement('div');
-            overlay.id = 'ed-overlay';
-            overlay.innerHTML = `
-                <div class="ed-iframe-container">
-                    <div class="ed-header">
-                        <h3>🔐 Connectez-vous à EcoleDirecte</h3>
-                        <button class="ed-close-btn" onclick="window.edScraper.cancel()">✕</button>
-                    </div>
-                    <iframe id="ed-iframe" src="${this.loginUrl}" frameborder="0"></iframe>
-                    <div class="ed-footer">
-                        <p>📝 Connectez-vous ci-dessus, puis cliquez sur "Continuer" →</p>
-                        <button class="ed-confirm-btn" onclick="window.edScraper.confirmConnection()">✅ Continuer</button>
-                    </div>
-                </div>
-            `;
-
-            // Ajouter les styles
-            const style = document.createElement('style');
-            style.textContent = `
-                #ed-overlay {
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    background: rgba(0, 0, 0, 0.8);
-                    z-index: 10000;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    animation: fadeIn 0.3s;
-                }
-
-                @keyframes fadeIn {
-                    from { opacity: 0; }
-                    to { opacity: 1; }
-                }
-
-                .ed-iframe-container {
-                    width: 90%;
-                    max-width: 1200px;
-                    height: 90%;
-                    background: white;
-                    border-radius: 12px;
-                    overflow: hidden;
-                    display: flex;
-                    flex-direction: column;
-                    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-                }
-
-                .ed-header {
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    color: white;
-                    padding: 20px;
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                }
-
-                .ed-header h3 {
-                    margin: 0;
-                    font-size: 20px;
-                }
-
-                .ed-close-btn {
-                    background: rgba(255, 255, 255, 0.2);
-                    border: none;
-                    color: white;
-                    width: 36px;
-                    height: 36px;
-                    border-radius: 50%;
-                    cursor: pointer;
-                    font-size: 20px;
-                    transition: all 0.3s;
-                }
-
-                .ed-close-btn:hover {
-                    background: rgba(255, 255, 255, 0.3);
-                    transform: rotate(90deg);
-                }
-
-                #ed-iframe {
-                    flex: 1;
-                    width: 100%;
-                    border: none;
-                }
-
-                .ed-footer {
-                    background: #f5f5f5;
-                    padding: 15px;
-                    text-align: center;
-                    color: #666;
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                }
-
-                .ed-footer p {
-                    margin: 0;
-                    font-size: 14px;
-                }
-
-                .ed-confirm-btn {
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    color: white;
-                    border: none;
-                    padding: 10px 20px;
-                    border-radius: 6px;
-                    cursor: pointer;
-                    font-weight: 600;
-                    transition: all 0.3s;
-                }
-
-                .ed-confirm-btn:hover {
-                    transform: translateY(-2px);
-                    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-                }
-
-                .ed-loading {
-                    animation: pulse 1.5s infinite;
-                }
-
-                @keyframes pulse {
-                    0%, 100% { opacity: 1; }
-                    50% { opacity: 0.5; }
-                }
-            `;
-
-            document.head.appendChild(style);
-            document.body.appendChild(overlay);
-            this.iframe = document.getElementById('ed-iframe');
             this.resolveConnection = resolve;
             this.rejectConnection = reject;
 
-            // Ne plus vérifier automatiquement - l'utilisateur cliquera sur "Continuer"
+            // Ouvrir dans une popup
+            const width = 1200;
+            const height = 800;
+            const left = (window.screen.width - width) / 2;
+            const top = (window.screen.height - height) / 2;
+            
+            this.popupWindow = window.open(
+                this.loginUrl,
+                'EcoleDirecteLogin',
+                `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
+            );
+
+            if (!this.popupWindow) {
+                reject(new Error('Les popups sont bloquées. Veuillez autoriser les popups pour ce site.'));
+                return;
+            }
+
+            // Surveiller la fenêtre popup
+            this.checkInterval = setInterval(() => {
+                // Vérifier si la popup a été fermée
+                if (this.popupWindow.closed) {
+                    clearInterval(this.checkInterval);
+                    
+                    // Si pas encore connecté, c'est une annulation
+                    if (!this.isConnected) {
+                        reject(new Error('Connexion annulée par l\'utilisateur'));
+                    }
+                }
+            }, 500);
+
+            // Afficher les instructions
+            this.showInstructions();
+
             // Timeout après 5 minutes
             setTimeout(() => {
-                if (!this.isConnected) {
-                    this.close();
+                if (!this.isConnected && this.popupWindow && !this.popupWindow.closed) {
+                    this.popupWindow.close();
+                    clearInterval(this.checkInterval);
                     reject(new Error('Timeout - connexion non confirmée'));
                 }
             }, 5 * 60 * 1000);
         });
+    }
+
+    /**
+     * Afficher les instructions
+     */
+    showInstructions() {
+        const overlay = document.createElement('div');
+        overlay.id = 'ed-overlay';
+        overlay.innerHTML = `
+            <div class="ed-instructions-container">
+                <div class="ed-header">
+                    <h3>🔐 Connexion à EcoleDirecte</h3>
+                    <button class="ed-close-btn" onclick="window.edScraper.cancel()">✕</button>
+                </div>
+                <div class="ed-content">
+                    <div class="instruction-step">
+                        <div class="step-number">1</div>
+                        <p>Une nouvelle fenêtre EcoleDirecte s'est ouverte</p>
+                    </div>
+                    <div class="instruction-step">
+                        <div class="step-number">2</div>
+                        <p>Connectez-vous avec vos identifiants</p>
+                    </div>
+                    <div class="instruction-step">
+                        <div class="step-number">3</div>
+                        <p>Une fois connecté, cliquez sur "Terminé" ci-dessous</p>
+                    </div>
+                </div>
+                <div class="ed-footer">
+                    <button class="ed-confirm-btn" onclick="window.edScraper.confirmConnection()">✅ Terminé, je suis connecté</button>
+                </div>
+            </div>
+        `;
+
+        // Ajouter les styles
+        const style = document.createElement('style');
+        style.textContent = `
+            #ed-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.8);
+                z-index: 10000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                animation: fadeIn 0.3s;
+            }
+
+            @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+
+            .ed-instructions-container {
+                width: 90%;
+                max-width: 500px;
+                background: white;
+                border-radius: 12px;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            }
+
+            .ed-header {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 20px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .ed-header h3 {
+                margin: 0;
+                font-size: 20px;
+            }
+
+            .ed-close-btn {
+                background: rgba(255, 255, 255, 0.2);
+                border: none;
+                color: white;
+                width: 36px;
+                height: 36px;
+                border-radius: 50%;
+                cursor: pointer;
+                font-size: 20px;
+                transition: all 0.3s;
+            }
+
+            .ed-close-btn:hover {
+                background: rgba(255, 255, 255, 0.3);
+                transform: rotate(90deg);
+            }
+
+            .ed-content {
+                padding: 30px;
+            }
+
+            .instruction-step {
+                display: flex;
+                align-items: center;
+                margin-bottom: 20px;
+                gap: 15px;
+            }
+
+            .step-number {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+                font-size: 18px;
+                flex-shrink: 0;
+            }
+
+            .instruction-step p {
+                margin: 0;
+                color: #333;
+                font-size: 16px;
+            }
+
+            .ed-footer {
+                background: #f5f5f5;
+                padding: 20px;
+                text-align: center;
+            }
+
+            .ed-confirm-btn {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                border: none;
+                padding: 12px 30px;
+                border-radius: 6px;
+                cursor: pointer;
+                font-weight: 600;
+                font-size: 16px;
+                transition: all 0.3s;
+            }
+
+            .ed-confirm-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            }
+
+            @keyframes fadeOut {
+                from { opacity: 1; }
+                to { opacity: 0; }
+            }
+        `;
+
+        document.head.appendChild(style);
+        document.body.appendChild(overlay);
     }
 
     /**
@@ -171,182 +234,30 @@ class EcoleDirecteScraper {
     async confirmConnection() {
         console.log('✅ Confirmation de connexion...');
         
-        // Essayer de récupérer des données
-        const data = await this.checkConnection();
+        // Fermer la popup
+        if (this.popupWindow && !this.popupWindow.closed) {
+            this.popupWindow.close();
+        }
+
+        // Marquer comme connecté
+        this.userData = {
+            timestamp: new Date().toISOString(),
+            source: 'manual',
+            message: 'Connexion confirmée manuellement'
+        };
+        this.isConnected = true;
         
-        if (data || true) { // Toujours considérer comme succès
-            this.userData = data || {
-                timestamp: new Date().toISOString(),
-                source: 'manual',
-                message: 'Connexion confirmée manuellement'
-            };
-            this.isConnected = true;
-            this.close();
-            
-            if (this.resolveConnection) {
-                this.resolveConnection(this.userData);
-            }
-        }
-    }   
-    
-
-    /**
-     * Vérifier si l'utilisateur est connecté et scraper les données
-     */
-    async checkConnection() {
-        try {
-            // CORS bloque l'accès direct à l'iframe
-            // On va utiliser une autre méthode : écouter les messages postMessage
-            // ou vérifier si l'URL de l'iframe a changé (via try/catch)
-            
-            try {
-                const url = this.iframe.contentWindow.location.href;
-                console.log('🔍 Vérification URL:', url);
-
-                // Si on est sur une page de dashboard (contient /eleve/ ou /famille/)
-                if (url.includes('/eleve/') || url.includes('/famille/')) {
-                    console.log('✅ Connexion détectée! Extraction des données...');
-                    
-                    // On ne peut pas scraper directement à cause de CORS
-                    // On va récupérer les données via l'API ou localStorage
-                    const data = await this.extractDataFromAPI();
-                    return data;
-                }
-            } catch (corsError) {
-                // CORS - c'est normal, on est bloqué
-                // L'iframe est probablement sur ecoledirecte.com maintenant
-                // On va essayer d'injecter un script ou utiliser une autre méthode
-                console.log('🔒 CORS détecté (normal) - tentative extraction alternative...');
-                
-                // Vérifier le localStorage partagé
-                const data = this.checkLocalStorageData();
-                if (data) {
-                    return data;
-                }
-            }
-
-            return null;
-        } catch (error) {
-            console.log('⚠️ Erreur checkConnection:', error.message);
-            return null;
+        // Fermer les overlays
+        this.close();
+        
+        // Résoudre la promesse
+        if (this.resolveConnection) {
+            this.resolveConnection(this.userData);
         }
     }
 
     /**
-     * Extraire les données depuis l'API EcoleDirecte
-     */
-    async extractDataFromAPI() {
-        try {
-            // Vérifier si on peut accéder aux cookies de l'iframe
-            // (spoiler: non, mais on essaie quand même)
-            
-            // Alternative : demander à l'utilisateur d'autoriser l'accès
-            // ou utiliser une extension navigateur
-            
-            return {
-                timestamp: new Date().toISOString(),
-                source: 'api',
-                message: 'Connexion détectée - Données API non disponibles via iframe (CORS)'
-            };
-        } catch (error) {
-            console.error('Erreur extractDataFromAPI:', error);
-            return null;
-        }
-    }
-
-    /**
-     * Vérifier le localStorage pour les données de session
-     */
-    checkLocalStorageData() {
-        try {
-            // Note: Le localStorage de l'iframe est isolé par CORS
-            // On ne peut accéder qu'au localStorage de notre propre domaine
-            
-            // Si l'utilisateur a déjà des données sauvegardées
-            const savedToken = localStorage.getItem('ed_token');
-            const savedAccount = localStorage.getItem('ed_account');
-
-            if (savedToken && savedAccount) {
-                console.log('📦 Données localStorage trouvées');
-                return {
-                    token: savedToken,
-                    account: JSON.parse(savedAccount),
-                    source: 'localStorage',
-                    timestamp: new Date().toISOString()
-                };
-            }
-            
-            return null;
-        } catch (error) {
-            console.error('Erreur checkLocalStorageData:', error);
-            return null;
-        }
-    }
-
-    /**
-     * Scraper les données de la page
-     */
-    async scrapeData(doc) {
-        try {
-            const data = {
-                timestamp: new Date().toISOString(),
-                source: 'scraping'
-            };
-
-            // Chercher les données dans le DOM
-            const userNameElement = doc.querySelector('.user-name, .student-name, .nom-utilisateur');
-            if (userNameElement) {
-                data.userName = userNameElement.textContent.trim();
-            }
-
-            // Chercher les notes
-            const grades = [];
-            const gradeElements = doc.querySelectorAll('.note, .grade, .devoir');
-            gradeElements.forEach(el => {
-                const grade = {
-                    subject: el.querySelector('.matiere, .subject')?.textContent.trim(),
-                    value: el.querySelector('.valeur, .value')?.textContent.trim(),
-                    date: el.querySelector('.date')?.textContent.trim()
-                };
-                if (grade.subject || grade.value) {
-                    grades.push(grade);
-                }
-            });
-
-            if (grades.length > 0) {
-                data.grades = grades;
-            }
-
-            // Chercher l'emploi du temps
-            const schedule = [];
-            const scheduleElements = doc.querySelectorAll('.cours, .lesson, .event');
-            scheduleElements.forEach(el => {
-                const lesson = {
-                    subject: el.querySelector('.matiere, .subject')?.textContent.trim(),
-                    time: el.querySelector('.heure, .time')?.textContent.trim(),
-                    room: el.querySelector('.salle, .room')?.textContent.trim()
-                };
-                if (lesson.subject) {
-                    schedule.push(lesson);
-                }
-            });
-
-            if (schedule.length > 0) {
-                data.schedule = schedule;
-            }
-
-            return data;
-        } catch (error) {
-            console.error('Erreur scraping:', error);
-            return {
-                timestamp: new Date().toISOString(),
-                error: error.message
-            };
-        }
-    }
-
-    /**
-     * Fermer l'iframe
+     * Fermer l'overlay
      */
     close() {
         const overlay = document.getElementById('ed-overlay');
@@ -360,25 +271,21 @@ class EcoleDirecteScraper {
         if (this.checkInterval) {
             clearInterval(this.checkInterval);
         }
-
-        // Ajouter l'animation de sortie
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes fadeOut {
-                from { opacity: 1; }
-                to { opacity: 0; }
-            }
-        `;
-        document.head.appendChild(style);
     }
 
     /**
      * Annuler la connexion
      */
     cancel() {
+        // Fermer la popup
+        if (this.popupWindow && !this.popupWindow.closed) {
+            this.popupWindow.close();
+        }
+
         if (this.checkInterval) {
             clearInterval(this.checkInterval);
         }
+        
         this.close();
         
         // Rejeter la promesse avec un message spécifique
@@ -411,6 +318,7 @@ class EcoleDirecteScraper {
         this.userData = null;
         localStorage.removeItem('ed_token');
         localStorage.removeItem('ed_account');
+        localStorage.removeItem('ed_data');
         sessionStorage.clear();
         console.log('🔓 Déconnecté');
     }
