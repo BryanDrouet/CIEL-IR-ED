@@ -23,7 +23,7 @@
                 <h1>🎓 EcoleDirecte Dashboard</h1>
                 <p class="subtitle">Connexion sécurisée</p>
                 
-                <form id="loginForm" autocomplete="on">
+                <form id="login-form" autocomplete="on">
                     <div class="form-group">
                         <label for="username">Identifiant EcoleDirecte</label>
                         <input type="text" id="username" name="username" required autocomplete="username webauthn">
@@ -41,13 +41,13 @@
                     
                     <div class="remember-me-container">
                         <label class="remember-me-label">
-                            <input type="checkbox" id="rememberMe" name="rememberMe">
+                            <input type="checkbox" id="remember-me" name="rememberMe">
                             <span class="checkmark"></span>
                             <span class="label-text">Se souvenir de moi</span>
                         </label>
                     </div>
                     
-                    <button type="submit" class="btn btn-primary">Se connecter</button>
+                    <button type="submit" class="btn btn-primary">Se connecter sur EcoleDirecte</button>
                 </form>
                 
                 <div id="loginError" class="error-message"></div>
@@ -282,7 +282,11 @@
         </div>
     </div>
 
-    <!-- Scripts de configuration et application -->
+    <!-- Scripts simplifiés -->
+    <script src="simple-ecole.js"></script>
+    <script src="app-simple.js"></script>
+    
+    <!-- Anciens scripts (désactivés pour le moment)
     <script src="ecoleDirecte.js"></script>
     <script src="calculator.js"></script>
     <script src="charts.js"></script>
@@ -293,5 +297,6 @@
     <script src="schoollife.js"></script>
     <script src="navigation.js"></script>
     <script src="app.js"></script>
+    -->
 </body>
 </html>
