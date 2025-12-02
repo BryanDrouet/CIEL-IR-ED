@@ -32,38 +32,89 @@ document.addEventListener('DOMContentLoaded', () => {
 /**
  * Récupérer les données EcoleDirecte via l'API
  */
-async function fetchEcoleDirecteData() {
+async function fetchEcoleDirecteData(token, accountId) {
     try {
         console.log('📡 Récupération des données EcoleDirecte...');
 
-        // L'utilisateur est maintenant connecté sur ecoledirecte.com
-        // On va essayer de récupérer les données via notre proxy
-        
-        // TODO: Pour l'instant on retourne des données factices
-        // Car on ne peut pas accéder aux cookies de la popup (Same-Origin Policy)
-        
-        // Solution future: Extension navigateur ou serveur proxy avec session
-        
+        if (!token || !accountId) {
+            console.error('Token ou accountId manquant');
+            return null;
+        }
+
+        // Récupérer les notes
+        const gradesResponse = await fetch(`/api/proxy?path=eleve/${accountId}/notes.awp?verbe=get`, {
+            method: 'POST',
+            headers: {
+                'X-Token': token,
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: 'data={}'
+        });
+
+        let grades = [];
+        if (gradesResponse.ok) {
+            const gradesData = await gradesResponse.json();
+            if (gradesData.code === 200 && gradesData.data && gradesData.data.notes) {
+                grades = gradesData.data.notes.map(note => ({
+                    subject: note.libelleMatiere,
+                    value: note.valeur + '/' + note.noteSur,
+                    date: note.date,
+                    coef: note.coef
+                }));
+            }
+        }
+
+        // Récupérer l'emploi du temps
+        const scheduleResponse = await fetch(`/api/proxy?path=eleve/${accountId}/emploidutemps.awp?verbe=get`, {
+            method: 'POST',
+            headers: {
+                'X-Token': token,
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: 'data={}'
+        });
+
+        let schedule = [];
+        if (scheduleResponse.ok) {
+            const scheduleData = await scheduleResponse.json();
+            if (scheduleData.code === 200 && scheduleData.data) {
+                schedule = scheduleData.data.map(cours => ({
+                    time: cours.start_date + ' - ' + cours.end_date,
+                    subject: cours.text,
+                    room: cours.salle || '',
+                    teacher: cours.prof || ''
+                }));
+            }
+        }
+
+        // Récupérer les messages
+        const messagesResponse = await fetch(`/api/proxy?path=eleve/${accountId}/messages.awp?verbe=get`, {
+            method: 'POST',
+            headers: {
+                'X-Token': token,
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: 'data={}'
+        });
+
+        let messages = [];
+        if (messagesResponse.ok) {
+            const messagesData = await messagesResponse.json();
+            if (messagesData.code === 200 && messagesData.data && messagesData.data.messages) {
+                messages = messagesData.data.messages.map(msg => ({
+                    from: msg.from,
+                    subject: msg.subject,
+                    date: msg.date,
+                    read: msg.read
+                }));
+            }
+        }
+
         return {
             timestamp: new Date().toISOString(),
-            account: {
-                nom: 'Utilisateur',
-                prenom: 'EcoleDirecte',
-                typeCompte: 'Élève'
-            },
-            grades: [
-                { subject: 'Mathématiques', value: '15/20', date: '01/12/2025' },
-                { subject: 'Français', value: '14/20', date: '30/11/2025' },
-                { subject: 'Histoire-Géo', value: '16/20', date: '29/11/2025' }
-            ],
-            schedule: [
-                { time: '08:00 - 09:00', subject: 'Mathématiques', room: 'Salle 101' },
-                { time: '09:00 - 10:00', subject: 'Français', room: 'Salle 205' },
-                { time: '10:15 - 11:15', subject: 'Anglais', room: 'Salle 303' }
-            ],
-            messages: [
-                { from: 'Administration', subject: 'Réunion parents-profs', date: '02/12/2025' }
-            ]
+            grades: grades,
+            schedule: schedule,
+            messages: messages
         };
 
     } catch (error) {
@@ -120,21 +171,33 @@ async function handleLogin() {
         }
 
         // Récupérer les données réelles
-        const realData = await fetchEcoleDirecteData();
+        const realData = await fetchEcoleDirecteData(data.token, data.account ? data.account.id : null);
         
         if (realData) {
+            // Fusionner avec les données du compte
+            const fullData = {
+                ...data,
+                ...realData
+            };
+        if (realData) {
+            // Fusionner avec les données du compte
+            const fullData = {
+                ...data,
+                ...realData
+            };
+            
             // Sauvegarder les données
-            if (realData.token) {
-                localStorage.setItem('ed_token', realData.token);
+            if (fullData.token) {
+                localStorage.setItem('ed_token', fullData.token);
             }
-            if (realData.account) {
-                localStorage.setItem('ed_account', JSON.stringify(realData.account));
+            if (fullData.account) {
+                localStorage.setItem('ed_account', JSON.stringify(fullData.account));
             }
-            localStorage.setItem('ed_data', JSON.stringify(realData));
+            localStorage.setItem('ed_data', JSON.stringify(fullData));
             localStorage.setItem('ed_last_sync', new Date().toISOString());
 
             // Afficher le dashboard
-            displayDashboard(realData.account || {});
+            displayDashboard(fullData.account || {});
         } else {
             // Pas de données récupérées, afficher quand même le dashboard
             displayDashboard({});

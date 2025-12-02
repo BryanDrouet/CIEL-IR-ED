@@ -91,11 +91,21 @@ class EcoleDirecteScraper {
                     </div>
                     <div class="instruction-step">
                         <div class="step-number">3</div>
-                        <p>Une fois connecté, cliquez sur "Terminé" ci-dessous</p>
+                        <p>Une fois connecté, la page va se rafraîchir automatiquement</p>
+                    </div>
+                    <div class="instruction-step">
+                        <div class="step-number">4</div>
+                        <p>Appuyez sur <strong>F12</strong>, allez dans <strong>Console</strong> et tapez :<br>
+                        <code style="background:#f5f5f5;padding:5px;display:block;margin-top:5px;border-radius:4px;font-family:monospace;">copy(localStorage.getItem('v4.token'))</code></p>
+                    </div>
+                    <div class="instruction-step">
+                        <div class="step-number">5</div>
+                        <p>Collez le token ici :</p>
+                        <input type="text" id="ed-token-input" placeholder="Collez votre token ici" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;margin-top:5px;">
                     </div>
                 </div>
                 <div class="ed-footer">
-                    <button class="ed-confirm-btn" onclick="window.edScraper.confirmConnection()">✅ Terminé, je suis connecté</button>
+                    <button class="ed-confirm-btn" onclick="window.edScraper.confirmConnection()">✅ Valider et continuer</button>
                 </div>
             </div>
         `;
@@ -234,6 +244,15 @@ class EcoleDirecteScraper {
     async confirmConnection() {
         console.log('✅ Confirmation de connexion...');
         
+        // Récupérer le token de l'input
+        const tokenInput = document.getElementById('ed-token-input');
+        const token = tokenInput ? tokenInput.value.trim() : null;
+
+        if (!token) {
+            alert('⚠️ Veuillez coller votre token dans le champ prévu');
+            return;
+        }
+
         // Changer le texte du bouton
         const confirmBtn = document.querySelector('.ed-confirm-btn');
         if (confirmBtn) {
@@ -242,27 +261,28 @@ class EcoleDirecteScraper {
         }
 
         try {
-            // Essayer de récupérer les données via l'API
-            const data = await this.fetchDataFromAPI();
+            // Récupérer les données avec le token
+            const data = await this.fetchDataWithToken(token);
             
-            if (data && data.token) {
+            if (data && data.code === 200) {
                 console.log('✅ Données récupérées avec succès!');
-                this.userData = data;
-            } else {
-                console.log('⚠️ Impossible de récupérer les données automatiquement');
                 this.userData = {
+                    token: token,
+                    account: data.data.accounts[0],
                     timestamp: new Date().toISOString(),
-                    source: 'manual',
-                    message: 'Connexion confirmée manuellement'
+                    source: 'api'
                 };
+            } else {
+                throw new Error('Token invalide ou expiré');
             }
         } catch (error) {
             console.error('❌ Erreur récupération données:', error);
-            this.userData = {
-                timestamp: new Date().toISOString(),
-                source: 'manual',
-                error: error.message
-            };
+            alert('❌ Erreur: ' + error.message);
+            if (confirmBtn) {
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = '✅ Valider et continuer';
+            }
+            return;
         }
 
         this.isConnected = true;
@@ -282,31 +302,32 @@ class EcoleDirecteScraper {
     }
 
     /**
-     * Récupérer les données via l'API EcoleDirecte
+     * Récupérer les données avec le token
      */
-    async fetchDataFromAPI() {
+    async fetchDataWithToken(token) {
         try {
-            // On va utiliser le proxy pour récupérer les données
-            // L'utilisateur doit être connecté sur ecoledirecte.com
-            
-            // Méthode 1: Essayer de récupérer via notre proxy avec les cookies
-            const response = await fetch('/api/proxy?path=login.awp', {
-                method: 'GET',
-                credentials: 'include' // Inclure les cookies
+            console.log('📡 Récupération des données avec token...');
+
+            // Utiliser le proxy pour récupérer les données
+            const response = await fetch('/api/proxy?path=eleve/' + token.split('.')[0] + '/timeline.awp?verbe=get', {
+                method: 'POST',
+                headers: {
+                    'X-Token': token,
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: 'data={}'
             });
 
             if (!response.ok) {
-                throw new Error('API non disponible');
+                throw new Error('Erreur API');
             }
 
-            // Pour l'instant, on retourne null car on ne peut pas récupérer
-            // les cookies de la popup (Same-Origin Policy)
-            // TODO: Implémenter une solution avec extension navigateur ou autre
-            return null;
+            const data = await response.json();
+            return data;
 
         } catch (error) {
-            console.error('Erreur fetchDataFromAPI:', error);
-            return null;
+            console.error('Erreur fetchDataWithToken:', error);
+            throw error;
         }
     }
 
