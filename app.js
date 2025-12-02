@@ -77,6 +77,18 @@ function setupEventListeners() {
     if (refreshBtn) {
         refreshBtn.addEventListener('click', handleRefresh);
     }
+
+    // Bouton afficher/masquer le mot de passe
+    const togglePasswordBtn = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+    if (togglePasswordBtn && passwordInput) {
+        togglePasswordBtn.addEventListener('click', () => {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            togglePasswordBtn.textContent = type === 'password' ? '👁️' : '🙈';
+            togglePasswordBtn.title = type === 'password' ? 'Afficher le mot de passe' : 'Masquer le mot de passe';
+        });
+    }
 }
 
 /**
