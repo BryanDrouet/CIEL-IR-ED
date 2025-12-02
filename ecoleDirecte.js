@@ -40,15 +40,21 @@ class EcoleDirecteAPI {
      */
     async login(username, password) {
         try {
+            // Préparer les données au format form-urlencoded
+            const payload = {
+                identifiant: username,
+                motdepasse: password
+            };
+            
+            const formData = new URLSearchParams();
+            formData.append('data', JSON.stringify(payload));
+            
             const response = await fetch(`${this.baseURL}/login.awp`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                body: JSON.stringify({
-                    identifiant: username,
-                    motdepasse: password
-                })
+                body: formData.toString()
             });
 
             if (!response.ok) {

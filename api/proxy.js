@@ -36,10 +36,8 @@ export default async function handler(req, res) {
 
         // Ajouter le body pour POST
         if (req.method === 'POST' && req.body) {
-            // Convertir le JSON en form-urlencoded
-            const formData = new URLSearchParams();
-            formData.append('data', JSON.stringify(req.body));
-            options.body = formData.toString();
+            // Le body est déjà en form-urlencoded depuis le client
+            options.body = req.body;
         }
 
         // Faire la requête à EcoleDirecte
