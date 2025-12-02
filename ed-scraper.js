@@ -87,22 +87,23 @@ class EcoleDirecteScraper {
                     </div>
                     <div class="instruction-step">
                         <div class="step-number">2</div>
-                        <p>Connectez-vous avec vos identifiants</p>
+                        <p><strong>IMPORTANT:</strong> Avant de vous connecter, appuyez sur <strong>F12</strong> → onglet <strong>Console</strong></p>
                     </div>
                     <div class="instruction-step">
                         <div class="step-number">3</div>
-                        <p>Une fois connecté, la page va se rafraîchir automatiquement</p>
+                        <p>Copiez et collez ce code dans la console :<br>
+                        <textarea id="injector-code" readonly style="width:100%;height:80px;font-family:monospace;font-size:11px;margin-top:5px;padding:8px;border:1px solid #ddd;border-radius:4px;resize:none;">(function(){const f=window.fetch;window.fetch=function(...a){return f.apply(this,a).then(r=>{r.clone().json().then(d=>{if(d?.token){console.log('TOKEN:',d.token);navigator.clipboard?.writeText(d.token);alert('✅ Token copié!')}}).catch(()=>{});return r})};console.log('✅ Prêt!')})();</textarea>
+                        <button onclick="document.getElementById('injector-code').select();document.execCommand('copy');alert('Code copié!')" style="margin-top:5px;padding:5px 10px;background:#667eea;color:white;border:none;border-radius:4px;cursor:pointer;">📋 Copier le code</button>
+                        </p>
                     </div>
                     <div class="instruction-step">
                         <div class="step-number">4</div>
-                        <p>Appuyez sur <strong>F12</strong>, allez dans <strong>Application</strong> → <strong>Local Storage</strong> → <strong>www.ecoledirecte.com</strong><br>
-                        Cherchez la clé qui contient "token" et copiez sa valeur<br>
-                        <small style="color:#666;">(Ou dans Console, essayez: <code>Object.keys(localStorage)</code> pour voir toutes les clés)</small></p>
+                        <p>Appuyez sur <strong>Entrée</strong> puis <strong>connectez-vous</strong> avec vos identifiants</p>
                     </div>
                     <div class="instruction-step">
                         <div class="step-number">5</div>
-                        <p>Collez le token ici :</p>
-                        <input type="text" id="ed-token-input" placeholder="Collez votre token ici" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;margin-top:5px;">
+                        <p>Le token sera <strong>automatiquement copié</strong>. Collez-le ici :</p>
+                        <input type="text" id="ed-token-input" placeholder="Collez votre token ici (Ctrl+V)" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;margin-top:5px;">
                     </div>
                 </div>
                 <div class="ed-footer">
