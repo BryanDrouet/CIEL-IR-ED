@@ -67,9 +67,20 @@ export default async function handler(req, res) {
             body: body,
         });
 
-        // Transférer les cookies de la réponse
-        const setCookieHeaders = response.headers.raw()['set-cookie'];
-        if (setCookieHeaders) {
+        // Récupérer les cookies de la réponse (compatible Vercel)
+        let setCookieHeaders = null;
+        
+        // Essayer plusieurs méthodes pour récupérer les cookies
+        if (response.headers.getSetCookie) {
+            // Node.js 18+ / Edge runtime
+            setCookieHeaders = response.headers.getSetCookie();
+        } else if (response.headers.get('set-cookie')) {
+            // Fallback
+            const cookieHeader = response.headers.get('set-cookie');
+            setCookieHeaders = cookieHeader ? [cookieHeader] : null;
+        }
+
+        if (setCookieHeaders && setCookieHeaders.length > 0) {
             res.setHeader('Set-Cookie', setCookieHeaders);
         }
 
@@ -78,7 +89,7 @@ export default async function handler(req, res) {
             console.log('Proxy GET GTK response:', { status: response.status, hasCookies: !!setCookieHeaders });
             
             let gtkCookie = null;
-            if (setCookieHeaders) {
+            if (setCookieHeaders && setCookieHeaders.length > 0) {
                 const cookieString = setCookieHeaders.join(';');
                 const gtkMatch = cookieString.match(/GTK=([^;]+)/);
                 if (gtkMatch) {
