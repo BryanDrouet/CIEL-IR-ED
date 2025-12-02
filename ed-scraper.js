@@ -95,8 +95,9 @@ class EcoleDirecteScraper {
                     </div>
                     <div class="instruction-step">
                         <div class="step-number">4</div>
-                        <p>Appuyez sur <strong>F12</strong>, allez dans <strong>Console</strong> et tapez :<br>
-                        <code style="background:#f5f5f5;padding:5px;display:block;margin-top:5px;border-radius:4px;font-family:monospace;">copy(localStorage.getItem('v4.token'))</code></p>
+                        <p>Appuyez sur <strong>F12</strong>, allez dans <strong>Application</strong> → <strong>Local Storage</strong> → <strong>www.ecoledirecte.com</strong><br>
+                        Cherchez la clé qui contient "token" et copiez sa valeur<br>
+                        <small style="color:#666;">(Ou dans Console, essayez: <code>Object.keys(localStorage)</code> pour voir toutes les clés)</small></p>
                     </div>
                     <div class="instruction-step">
                         <div class="step-number">5</div>
